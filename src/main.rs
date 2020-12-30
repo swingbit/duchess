@@ -1,12 +1,7 @@
 // use std::io::{self, BufRead};
-use std::cmp;
+// use std::cmp;
 use std::ops;
-// use std::fmt::Display;
-// use trees::{tr,Tree};
-
-trait Valuable {
-	fn value(&self, for_color: Color) -> u32;
-}
+use trees::{tr,Tree};
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
 enum Color { Black, White }
@@ -19,6 +14,12 @@ enum Piece {
 	Rook,
 	Queen,
 	King,
+}
+
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
+struct Tile {
+	piece: Piece,	
+	color: Color,
 }
 
 #[derive(Debug,Copy,Clone,PartialEq,Eq)]
@@ -67,6 +68,10 @@ impl Pos {
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
 enum MoveType { Illegal, Eat, Move }
 
+trait Valuable {
+	fn value(&self, for_color: Color) -> u32;
+}
+
 impl Valuable for Piece {
 	fn value(&self, _for_color: Color) -> u32 {
 		match &self {
@@ -80,18 +85,24 @@ impl Valuable for Piece {
 	}
 }
 
-#[derive(Debug, Copy, Clone, PartialEq, Eq)]
-struct Tile {
-	piece: Piece,	
-	color: Color,
-}
-
 impl Valuable for Tile {
 	fn value(&self, for_color: Color) -> u32 {
 		if self.color != for_color {
 			return 0;
 		}
 		return self.piece.value(for_color);
+	}
+}
+
+impl Valuable for Board {
+	fn value(&self, for_color: Color) -> u32 {
+		let mut v = 0;
+		for tile in self.tiles.iter().flat_map(|r| r.iter()) {
+			if let Some(tile) = tile {
+				v += tile.value(for_color);
+			}
+		}
+		return v;
 	}
 }
 
@@ -129,7 +140,7 @@ impl Board {
 		b
 	}
 
-	fn tile_at_pos(&self, pos: &Pos) -> &Option<Tile> {
+	fn at(&self, pos: &Pos) -> &Option<Tile> {
 		&self.tiles[pos.row as usize][pos.col as usize]
 	}
 
@@ -138,25 +149,25 @@ impl Board {
 		 Allows to "see through" a specified number of obstacles
 	*/
 	fn check_move(&self, f_pos: &Pos, t_pos: &Pos, max_obstacles: u8) -> MoveType {
-		if let Some(f_tile) = &self.tile_at_pos(f_pos) {
+		if let Some(f_tile) = self.at(f_pos) {
 			match f_tile.piece {
 				Piece::Pawn => {
 					match f_tile.color {
 						Color::White => {
-							if (t_pos.row == f_pos.row+1 || (f_pos.row == 1 && t_pos.row == 3)) && t_pos.col == f_pos.col && self.tile_at_pos(t_pos).is_none() {
+							if (t_pos.row == f_pos.row+1 || (f_pos.row == 1 && t_pos.row == 3)) && t_pos.col == f_pos.col && self.at(t_pos).is_none() {
 								return MoveType::Move;
 							}
-							if let Some(t_tile) = self.tile_at_pos(t_pos) {
+							if let Some(t_tile) = self.at(t_pos) {
 								if t_pos.row == f_pos.row+1 && (t_pos.col == f_pos.col-1 || t_pos.col == f_pos.col+1) && t_tile.color != f_tile.color {
 									return MoveType::Eat;
 								}
 							}
 						},
 						Color::Black => {
-							if (t_pos.row == f_pos.row-1 || (f_pos.row == 6 && t_pos.row == 4)) && t_pos.col == f_pos.col && self.tile_at_pos(t_pos).is_none() {
+							if (t_pos.row == f_pos.row-1 || (f_pos.row == 6 && t_pos.row == 4)) && t_pos.col == f_pos.col && self.at(t_pos).is_none() {
 								return MoveType::Move;
 							}
-							if let Some(t_tile) = self.tile_at_pos(t_pos) {
+							if let Some(t_tile) = self.at(t_pos) {
 								if t_pos.row == f_pos.row-1 && (t_pos.col == f_pos.col-1 || t_pos.col == f_pos.col+1) && t_tile.color != f_tile.color {
 									return MoveType::Eat;
 								}
@@ -168,7 +179,7 @@ impl Board {
 				Piece::Knight => {
 					if ((f_pos.row-t_pos.row).abs() == 1 && (f_pos.col-t_pos.col).abs() == 2) ||
 						 ((f_pos.row-t_pos.row).abs() == 2 && (f_pos.col-t_pos.col).abs() == 1) {
-						if let Some(t_tile)	= &self.tile_at_pos(t_pos) {
+						if let Some(t_tile)	= self.at(t_pos) {
 							if t_tile.color != f_tile.color {
 								return MoveType::Eat;
 							}
@@ -180,7 +191,7 @@ impl Board {
 
 				Piece::Bishop => {
 					if (f_pos.row-t_pos.row).abs() == (f_pos.col-t_pos.col).abs() {
-						if let Some(t_tile)	= &self.tile_at_pos(t_pos) {
+						if let Some(t_tile)	= self.at(t_pos) {
 							if t_tile.color != f_tile.color {
 								return MoveType::Eat;
 							}
@@ -192,7 +203,7 @@ impl Board {
 
 				Piece::Rook => {
 					if f_pos.row == t_pos.row || f_pos.col ==t_pos.col {
-						if let Some(t_tile)	= &self.tile_at_pos(t_pos) {
+						if let Some(t_tile)	= self.at(t_pos) {
 							if t_tile.color != f_tile.color {
 								return MoveType::Eat;
 							}
@@ -205,7 +216,7 @@ impl Board {
 				Piece::Queen => {
 					if (f_pos.row-t_pos.row).abs() == (f_pos.col-t_pos.col).abs() || 
 							f_pos.row == t_pos.row || f_pos.col ==t_pos.col {
-						if let Some(t_tile)	= &self.tile_at_pos(t_pos) {
+						if let Some(t_tile)	= self.at(t_pos) {
 							if t_tile.color != f_tile.color {
 								return MoveType::Eat;
 							}
@@ -219,7 +230,7 @@ impl Board {
 					if (f_pos.row-t_pos.row).abs() <= 1 && 
 							(f_pos.col-t_pos.col).abs() <= 1 &&
 							*f_pos != *t_pos {
-						if let Some(t_tile)	= &self.tile_at_pos(t_pos) {
+						if let Some(t_tile)	= self.at(t_pos) {
 							if t_tile.color != f_tile.color {
 								return MoveType::Eat;
 							}
@@ -234,8 +245,8 @@ impl Board {
 	}
 
 	fn move_type(&self, f_pos: &Pos, t_pos: &Pos) -> MoveType {
-		if let Some(f_tile) = &self.tile_at_pos(f_pos) {
-			if let Some(t_tile) = self.tile_at_pos(t_pos) {
+		if let Some(f_tile) = self.at(f_pos) {
+			if let Some(t_tile) = self.at(t_pos) {
 				if f_tile.color != t_tile.color {
 					return MoveType::Eat;
 				}
@@ -250,8 +261,9 @@ impl Board {
 		let mut moves = Vec::new();
 
 		/* Generate possible moves from a given point in all directions */
-		fn generate_arm(moves:&mut Vec<Pos>, b:&Board, f_pos:&Pos, f_c:fn(i8,i8)->i8, f_r:fn(i8,i8)->i8) {
-			for i in 1..8 {
+		fn generate_arm(moves:&mut Vec<Pos>, b:&Board, f_pos:&Pos, max_len:i8, f_c:fn(i8,i8)->i8, f_r:fn(i8,i8)->i8) {
+			
+			for i in 1..max_len+1 {
 				if let Some(t_pos) = Pos::at(f_c(f_pos.col,i), f_r(f_pos.row,i)) {
 					match b.move_type(f_pos,&t_pos) {
 						MoveType::Move => moves.push(t_pos),
@@ -263,37 +275,37 @@ impl Board {
 		};
 
 		/* Generate possible bishop moves from a given point */
-		fn generate_bishop(moves:&mut Vec<Pos>, b:&Board, f_pos:&Pos) {
+		fn generate_bishop(moves:&mut Vec<Pos>, b:&Board, f_pos:&Pos, max_len:i8) {
 			let add = ops::Add::add;
 			let sub = ops::Sub::sub;
 
 			/* north-west */
-			generate_arm(moves,b,f_pos,sub,add);
+			generate_arm(moves,b,f_pos,max_len,sub,add);
 			/* north-east */
-			generate_arm(moves,b,f_pos,add,add);
+			generate_arm(moves,b,f_pos,max_len,add,add);
 			/* south-east */
-			generate_arm(moves,b,f_pos,add,sub);
+			generate_arm(moves,b,f_pos,max_len,add,sub);
 			/* south-west */
-			generate_arm(moves,b,f_pos,sub,sub);
+			generate_arm(moves,b,f_pos,max_len,sub,sub);
 		}
 
 		/* Generate possible rook moves from a given point */
-		fn generate_rook(moves:&mut Vec<Pos>, b:&Board, f_pos:&Pos) {
+		fn generate_rook(moves:&mut Vec<Pos>, b:&Board, f_pos:&Pos, max_len:i8) {
 			let add = ops::Add::add;
 			let sub = ops::Sub::sub;
 			let id = |x,_| x;
 
 			/* north */
-			generate_arm(moves,b,f_pos,id,add);
+			generate_arm(moves,b,f_pos,max_len,id,add);
 			/* east */
-			generate_arm(moves,b,f_pos,add,id);
+			generate_arm(moves,b,f_pos,max_len,add,id);
 			/* south */
-			generate_arm(moves,b,f_pos,sub,id);
+			generate_arm(moves,b,f_pos,max_len,sub,id);
 			/* west */
-			generate_arm(moves,b,f_pos,id,sub);
+			generate_arm(moves,b,f_pos,max_len,id,sub);
 		}
 		
-		if let Some(f_tile) = &self.tile_at_pos(f_pos) {
+		if let Some(f_tile) = self.at(f_pos) {
 			match f_tile.piece {
 				Piece::Pawn => {
 					match f_tile.color {
@@ -302,7 +314,6 @@ impl Board {
 								if self.move_type(f_pos,&t_pos) == MoveType::Move {
 									moves.push(t_pos);
 								}
-							} else {
 								if f_pos.row == 1 {
 									if let Some(t_pos) = Pos::at(f_pos.col, f_pos.row+2) {
 										if self.move_type(f_pos,&t_pos) == MoveType::Move {
@@ -324,7 +335,6 @@ impl Board {
 								if self.move_type(f_pos,&t_pos) == MoveType::Move {
 									moves.push(t_pos);
 								}
-							} else {
 								if f_pos.row == 6 {
 									if let Some(t_pos) = Pos::at(f_pos.col, f_pos.row-2) {
 										if self.move_type(f_pos,&t_pos) == MoveType::Move {
@@ -360,27 +370,18 @@ impl Board {
 					}
 				},
 
-				Piece::Bishop => generate_bishop(&mut moves,self,f_pos),
+				Piece::Bishop => generate_bishop(&mut moves,self,f_pos,7),
 
-				Piece::Rook  => generate_rook(&mut moves,self,f_pos),
+				Piece::Rook  => generate_rook(&mut moves,self,f_pos,7),
 
 				Piece::Queen => {
-					generate_bishop(&mut moves,self,f_pos);
-					generate_rook(&mut moves,self,f_pos);
+					generate_bishop(&mut moves,self,f_pos,7);
+					generate_rook(&mut moves,self,f_pos,7);
 				},
 
 				Piece::King => {
-					for c in [-1, 0, 1].iter() {
-						for r in [-1, 0, 1].iter() {
-							if *c != 0 || *r != 0 {
-								if let Some(t_pos) = Pos::at(f_pos.col+*c, f_pos.row+*r) {
-									if self.move_type(f_pos,&t_pos) != MoveType::Illegal {
-										moves.push(t_pos);
-									}
-								}
-							}
-						}
-					}
+					generate_bishop(&mut moves,self,f_pos,1);
+					generate_rook(&mut moves,self,f_pos,1);
 				}
 			}
 		}
@@ -388,23 +389,12 @@ impl Board {
 	}
 }
 
-impl Valuable for Board {
-	fn value(&self, for_color: Color) -> u32 {
-		let mut v = 0;
-		for tile in self.tiles.iter().flat_map(|r| r.iter()) {
-			if let Some(tile) = tile {
-				v += tile.value(for_color);
-			}
-		}
-		return v;
-	}
-}
 
 
 fn main() {
 
-	// let mut tree: Tree<Board> = tr(Board::new());
-	let mut b: Board = Board::new();
+	let b: Board = Board::new();
+	let mut tree: Tree<Board> = tr(b);
 
 	println!("The Board");
 	for r in b.tiles.iter() {
@@ -420,7 +410,7 @@ fn main() {
 	for c in 0..8 {
 		for r in 0..8 {
 			let f_pos = Pos::at(c,r).unwrap();
-			if let Some(f_tile) = b.tile_at_pos(&f_pos) {
+			if let Some(f_tile) = b.at(&f_pos) {
 				if f_tile.color == Color::White {
 					print!("[{},{}] ({:?}): ",c,r,f_tile.piece);
 					println!("{:?}", b.generate_legal_moves(&f_pos));
