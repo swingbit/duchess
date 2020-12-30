@@ -262,7 +262,6 @@ impl Board {
 
 		/* Generate possible moves from a given point in all directions */
 		fn generate_arm(moves:&mut Vec<Pos>, b:&Board, f_pos:&Pos, max_len:i8, f_c:fn(i8,i8)->i8, f_r:fn(i8,i8)->i8) {
-			
 			for i in 1..max_len+1 {
 				if let Some(t_pos) = Pos::at(f_c(f_pos.col,i), f_r(f_pos.row,i)) {
 					match b.move_type(f_pos,&t_pos) {
@@ -308,47 +307,36 @@ impl Board {
 		if let Some(f_tile) = self.at(f_pos) {
 			match f_tile.piece {
 				Piece::Pawn => {
-					match f_tile.color {
-						Color::White => {
-							if let Some(t_pos) = Pos::at(f_pos.col, f_pos.row+1) {
+					let f_incr:fn(i8,i8)->i8;
+					let start_row:i8;
+
+					if f_tile.color == Color::White {
+						f_incr = ops::Add::add;
+						start_row = 1;
+					} else {
+						f_incr = ops::Sub::sub;
+						start_row = 6;
+					}
+
+					/* forward by 1 */
+					if let Some(t_pos) = Pos::at(f_pos.col, f_incr(f_pos.row,1)) {
+						if self.move_type(f_pos,&t_pos) == MoveType::Move {
+							moves.push(t_pos);
+						}
+						if f_pos.row == start_row {
+							/* forward by 2 */
+							if let Some(t_pos) = Pos::at(f_pos.col, f_incr(f_pos.row,2)) {
 								if self.move_type(f_pos,&t_pos) == MoveType::Move {
 									moves.push(t_pos);
-								}
-								if f_pos.row == 1 {
-									if let Some(t_pos) = Pos::at(f_pos.col, f_pos.row+2) {
-										if self.move_type(f_pos,&t_pos) == MoveType::Move {
-											moves.push(t_pos);
-										}
-									}
-								}
-							}
-							for i in [-1, 1].iter() {
-								if let Some(t_pos) = Pos::at(f_pos.col+i, f_pos.row+1) {
-									if self.move_type(f_pos,&t_pos) == MoveType::Eat {
-										moves.push(t_pos);
-									}
 								}
 							}
 						}
-						Color::Black => {
-							if let Some(t_pos) = Pos::at(f_pos.col, f_pos.row-1) {
-								if self.move_type(f_pos,&t_pos) == MoveType::Move {
-									moves.push(t_pos);
-								}
-								if f_pos.row == 6 {
-									if let Some(t_pos) = Pos::at(f_pos.col, f_pos.row-2) {
-										if self.move_type(f_pos,&t_pos) == MoveType::Move {
-											moves.push(t_pos);
-										}
-									}
-								}
-							}
-							for i in [-1, 1].iter() {
-								if let Some(t_pos) = Pos::at(f_pos.col+i, f_pos.row-1) {
-									if self.move_type(f_pos,&t_pos) == MoveType::Eat {
-										moves.push(t_pos);
-									}
-								}
+					}
+					/* Eat diagonally */
+					for i in [-1, 1].iter() {
+						if let Some(t_pos) = Pos::at(f_pos.col+i, f_incr(f_pos.row,1)) {
+							if self.move_type(f_pos,&t_pos) == MoveType::Eat {
+								moves.push(t_pos);
 							}
 						}
 					}
