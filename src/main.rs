@@ -1,7 +1,24 @@
 // use std::io::{self, BufRead};
 // use std::cmp;
+use std::fmt;
+use std::str::FromStr;
+use std::error::Error;
 use std::ops;
 use trees::{tr,Tree};
+
+#[derive(Clone, Debug)]
+pub struct ParsePosError;
+impl fmt::Display for ParsePosError {
+	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+			"invalid position".fmt(f)
+	}
+}
+
+impl Error for ParsePosError {
+	fn description(&self) -> &str {
+			"invalid position"
+	}
+}
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
 enum Color { Black, White }
@@ -30,6 +47,25 @@ struct Pos {
 	col: i8,
 }
 
+impl fmt::Display for Pos {
+	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+		let (x,y) = self.to_coord();
+		write!(f, "{}{}", x,y)
+	}
+}
+
+impl FromStr for Pos {
+	type Err = ParsePosError;
+
+	fn from_str(s: &str) -> Result<Self, Self::Err> {
+			if let Some(pos) = Self::from_coord(s) {
+				return Ok(pos);
+			} else {
+				return Err(ParsePosError);
+			}
+	}
+}
+
 impl Pos {
 	fn at(col: i8, row:i8) -> Option<Pos> {
 		if col < 0 || row < 0 || col > 7 || row > 7 {
@@ -38,35 +74,38 @@ impl Pos {
 		return Some(Pos {
 			col: col,
 			row: row,
-	});
+		});
 	}
 
-	fn from_coord(x: char, y: char) -> Option<Pos> {
+	fn from_coord(s: &str) -> Option<Pos> {
+		if s.len() != 2 {
+			return None;
+		}
+		let x = s.chars().nth(0).unwrap();
+		let y = s.chars().nth(1).unwrap();
+
 		if ! (x.is_ascii() && y.is_ascii()) {
 			return None;
 		}
-		let x = x.to_ascii_uppercase();
+		let x = x.to_ascii_lowercase();
 
-		if ! (x.ge(&'A') && x.le(&'H') && y.ge(&'1') && y.le(&'8')) {
+		if ! (x.ge(&'a') && x.le(&'h') && y.ge(&'1') && y.le(&'8')) {
 			return None;
 		}
 
 		return Some(Pos {
-			col: ((x as u8) - b'A') as i8,
+			col: ((x as u8) - b'a') as i8,
 			row: ((y as u8) - b'1') as i8,
 		});
 	}
 
 	fn to_coord(&self) -> (char,char) {
-		return (
-			((self.col as u8) + b'A') as char,
-			((self.row as u8) + b'1') as char
-		);
+		( ((self.col as u8) + b'a') as char, ((self.row as u8) + b'1') as char )
 	}
 }
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
-enum MoveType { Illegal, Eat, Move }
+enum MoveType { Illegal, Capture, Move }
 
 trait Valuable {
 	fn value(&self, for_color: Color) -> u32;
@@ -158,7 +197,7 @@ impl Board {
 				if let Some(x_pos) = Pos::at(f_c(f_pos.col,i), f_r(f_pos.row,i)) {
 					let move_type = b.move_type(f_pos,&x_pos);
 					match &move_type {
-						MoveType::Illegal | MoveType::Eat => {
+						MoveType::Illegal | MoveType::Capture => {
 							if obstacles == max_obstacles {
 								if *t_pos == x_pos {
 									return move_type;
@@ -178,7 +217,7 @@ impl Board {
 					return MoveType::Illegal; 
 				}
 			}
-			return MoveType::Illegal;
+			MoveType::Illegal
 		};
 
 		fn check_bishop(b:&Board, f_pos:&Pos, t_pos:&Pos, max_obstacles:u8) -> MoveType {
@@ -204,7 +243,7 @@ impl Board {
 				/* south-west */
 				return check_arm(b,f_pos,t_pos,max_obstacles,sub,sub);
 			}
-			return MoveType::Illegal;
+			MoveType::Illegal
 		}
 
 		fn check_rook(b:&Board, f_pos:&Pos, t_pos:&Pos, max_obstacles:u8) -> MoveType {
@@ -228,7 +267,7 @@ impl Board {
 				/* west */
 				return check_arm(b,f_pos,t_pos,max_obstacles,sub,id);
 			}
-			return MoveType::Illegal;
+			MoveType::Illegal
 		}
 
 		if let Some(f_tile) = self.at(f_pos) {
@@ -245,11 +284,11 @@ impl Board {
 						start_row = 6;
 					}
 					if let Some(t_tile) = self.at(t_pos) {
-						/* Eat diagonally */
+						/* Capture diagonally */
 						if (t_pos.col -f_pos.col).abs() == 1 &&
 								t_pos.row == f_incr(f_pos.row,1) &&
 								t_tile.color != f_tile.color {
-							return MoveType::Eat;
+							return MoveType::Capture;
 						}
 					} else {
 						/* forward by 1 or 2 */
@@ -267,7 +306,7 @@ impl Board {
 						 ((f_pos.row-t_pos.row).abs() == 2 && (f_pos.col-t_pos.col).abs() == 1) {
 						if let Some(t_tile)	= self.at(t_pos) {
 							if t_tile.color != f_tile.color {
-								return MoveType::Eat;
+								return MoveType::Capture;
 							}
 						} else {
 							return MoveType::Move;
@@ -300,20 +339,20 @@ impl Board {
 				},
 			}
 		}
-		return MoveType::Illegal;
+		MoveType::Illegal
 	}
 
 	fn move_type(&self, f_pos: &Pos, t_pos: &Pos) -> MoveType {
 		if let Some(f_tile) = self.at(f_pos) {
 			if let Some(t_tile) = self.at(t_pos) {
 				if f_tile.color != t_tile.color {
-					return MoveType::Eat;
+					return MoveType::Capture;
 				}
 			} else {
 				return MoveType::Move;
 			}
 		}
-		return MoveType::Illegal;
+		MoveType::Illegal
 	}
 	
 	fn generate_legal_moves(&self, f_pos: &Pos) -> Vec<Pos> {
@@ -325,7 +364,7 @@ impl Board {
 				if let Some(t_pos) = Pos::at(f_c(f_pos.col,i), f_r(f_pos.row,i)) {
 					match b.move_type(f_pos,&t_pos) {
 						MoveType::Move => moves.push(t_pos),
-						MoveType::Eat => { moves.push(t_pos); break; },
+						MoveType::Capture => { moves.push(t_pos); break; },
 						MoveType::Illegal => break
 					}
 				} else { break; }
@@ -391,10 +430,10 @@ impl Board {
 							}
 						}
 					}
-					/* Eat diagonally */
+					/* Capture diagonally */
 					for i in [-1, 1].iter() {
 						if let Some(t_pos) = Pos::at(f_pos.col+i, f_incr(f_pos.row,1)) {
-							if self.move_type(f_pos,&t_pos) == MoveType::Eat {
+							if self.move_type(f_pos,&t_pos) == MoveType::Capture {
 								moves.push(t_pos);
 							}
 						}
@@ -432,10 +471,9 @@ impl Board {
 				}
 			}
 		}
-		return moves;
+		moves
 	}
 }
-
 
 
 fn main() {
@@ -448,11 +486,6 @@ fn main() {
 		println!("{:?}", r);
 	}
 	println!("Board value for white = {}", &b.value(Color::White));
-
-	let pos = Pos::from_coord('G','8').unwrap();
-	println!("G8 = {:?}", &pos);
-	let (x,y) = &pos.to_coord();
-	println!("{:?} = [{},{}]", &pos, x, y);
 
 	for c in 0..8 {
 		for r in 0..8 {
@@ -468,3 +501,15 @@ fn main() {
 
 }
 
+
+#[cfg(test)]
+mod tests {
+	use super::Pos;
+	#[test]
+	pub fn test_parse_pos() {
+		let coords_in = "G8";
+		let pos = coords_in.parse::<Pos>().expect("legal"); 
+		let coords_out = pos.to_string();
+		assert_eq!(coords_in.to_ascii_lowercase(),coords_out);
+	}
+}
