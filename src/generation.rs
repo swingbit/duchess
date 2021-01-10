@@ -17,8 +17,8 @@ impl Board {
 	}
 
 	/* Checks whether a move is valid
-		 Not needed for generated moves, only for human moves
-		 Allows to "see through" a specified number of obstacles
+	   Not needed for generated moves, only for human moves
+	   Allows to "see through" a specified number of obstacles
 	*/
 	pub fn check_move(&self, f_pos: &Pos, t_pos: &Pos, max_obstacles: u8) -> MoveType {
 

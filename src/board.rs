@@ -19,6 +19,7 @@ impl Error for ParsePosError {
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub enum Color { Black, White }
 impl Color {
+  #[inline]
 	fn swap(&self) -> Color {
 		match self {
 			Color::White => Color::Black,
@@ -147,8 +148,9 @@ impl Board {
 		b.tiles[6] = [Some(Tile {piece: Piece::Pawn, color: Color::Black}); 8];
 
 		b
-	}
-
+  }
+  
+  #[inline]
 	pub fn at(&self, pos: &Pos) -> &Option<Tile> {
 		&self.tiles[pos.row as usize][pos.col as usize]
 	}
@@ -169,6 +171,7 @@ pub trait Valuable {
 }
 
 impl Valuable for Piece {
+  #[inline]
 	fn value(&self) -> i32 {
 		match &self {
 			Piece::Pawn => 100,
@@ -182,6 +185,7 @@ impl Valuable for Piece {
 }
 
 impl Valuable for Tile {
+  #[inline]
 	fn value(&self) -> i32 {
 		match self.color {
 			Color::Black => 
