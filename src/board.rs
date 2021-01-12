@@ -18,8 +18,8 @@ impl Error for ParsePosError {
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub enum Color {
-	Black,
-	White,
+	Black = 0,
+	White = 1,
 }
 impl Color {
 	#[inline]
@@ -125,6 +125,7 @@ pub struct Board {
 	pub tiles: [[Option<Tile>; 8]; 8],
 	// pub value: i32,
 	pub player: Color,
+	pub king_pos: [Pos; 2]
 }
 
 impl Board {
@@ -133,6 +134,7 @@ impl Board {
 			tiles: [[None; 8]; 8],
 			// value: 0,
 			player,
+			king_pos: [Pos::at(4,7).unwrap(), Pos::at(4,0).unwrap()]
 		};
 
 		b.tiles[0][0] = Some(Tile {piece: Piece::Rook, color: Color::White});
@@ -159,16 +161,19 @@ impl Board {
 	}
 
 	#[inline]
-	pub fn at(&self, pos: &Pos) -> &Option<Tile> {
+	pub fn at(&self, pos: Pos) -> &Option<Tile> {
 		&self.tiles[pos.row as usize][pos.col as usize]
 	}
 
-	pub fn clone_apply_move(&self, f_pos: &Pos, t_pos: &Pos) -> Board {
+	pub fn clone_apply_move(&self, f_pos: Pos, t_pos: Pos) -> Board {
 		let mut b = self.clone();
-		b.tiles[t_pos.row as usize][t_pos.col as usize] =
-			self.tiles[f_pos.row as usize][f_pos.col as usize];
+		b.tiles[t_pos.row as usize][t_pos.col as usize] = self.tiles[f_pos.row as usize][f_pos.col as usize];
 		b.tiles[f_pos.row as usize][f_pos.col as usize] = None;
 		b.player = b.player.swap();
+		let t = b.at(t_pos).unwrap();
+		if t.piece == Piece::King {
+			b.king_pos[t.color as usize] = t_pos;
+		}
 		b
 	}
 }

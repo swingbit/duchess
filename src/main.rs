@@ -20,12 +20,12 @@ fn main() {
 		let (score, mv) = maximize(&b, i32::MIN, i32::MAX, 0);
 		let (f_pos, t_pos) = mv.unwrap();
 		println!("{:?}: [{}{}]({})", b.player, f_pos, t_pos, score);
-		b = b.clone_apply_move(&f_pos, &t_pos);
+		b = b.clone_apply_move(f_pos, t_pos);
 
 		let (score, mv) = minimize(&b, i32::MIN, i32::MAX, 0);
 		let (f_pos, t_pos) = mv.unwrap();
 		println!("{:?}: [{}{}]({})", b.player, f_pos, t_pos, score);
-		b = b.clone_apply_move(&f_pos, &t_pos);
+		b = b.clone_apply_move(f_pos, t_pos);
 	}
 }
 

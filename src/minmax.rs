@@ -17,7 +17,7 @@ pub fn maximize(b: &Board, mut alpha: i32, beta: i32, level: u8) -> (i32, Option
 	let mut best_move = None;
 	let moves = b.generate_all_legal_moves();
 	for (f_pos, t_pos) in moves {
-		let child = b.clone_apply_move(&f_pos, &t_pos);
+		let child = b.clone_apply_move(f_pos, t_pos);
 		let score = minimize(&child, alpha, beta, level + 1).0;
 		best_score = cmp::max(best_score, score);
 		if level == 0 {
@@ -45,7 +45,7 @@ pub fn minimize(b: &Board, alpha: i32, mut beta: i32, level: u8) -> (i32, Option
 	let mut best_move = None;
 	let moves = b.generate_all_legal_moves();
 	for (f_pos, t_pos) in moves {
-		let child = b.clone_apply_move(&f_pos, &t_pos);
+		let child = b.clone_apply_move(f_pos, t_pos);
 		let score = maximize(&child, alpha, beta, level + 1).0;
 		best_score = cmp::min(best_score, score);
 		if level == 0 {

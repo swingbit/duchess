@@ -3,7 +3,7 @@ use std::ops;
 use crate::board::{Board,Pos,MoveType,Piece,Color};
 
 impl Board {
-	fn move_type(&self, f_pos: &Pos, t_pos: &Pos) -> MoveType {
+	fn move_type(&self, f_pos: Pos, t_pos: Pos) -> MoveType {
 		if let Some(f_tile) = self.at(f_pos) {
 			if let Some(t_tile) = self.at(t_pos) {
 				if f_tile.color != t_tile.color {
@@ -20,19 +20,19 @@ impl Board {
 	   Not needed for generated moves, only for human moves
 	   Allows to "see through" a specified number of obstacles
 	*/
-	pub fn check_move(&self, f_pos: &Pos, t_pos: &Pos, max_obstacles: u8) -> MoveType {
+	pub fn check_move(&self, f_pos: Pos, t_pos: Pos, max_obstacles: u8) -> MoveType {
 
 		/* Checks possible moves from a given point in all directions */
-		fn check_arm(b:&Board, f_pos:&Pos, t_pos:&Pos, max_obstacles: u8, 
+		fn check_arm(b: &Board, f_pos: Pos, t_pos: Pos, max_obstacles: u8, 
 					f_c:fn(i8,i8)->i8, f_r:fn(i8,i8)->i8) -> MoveType {
 			let mut obstacles = 0;
 			for i in 1..8 {
 				if let Some(x_pos) = Pos::at(f_c(f_pos.col,i), f_r(f_pos.row,i)) {
-					let move_type = b.move_type(f_pos,&x_pos);
+					let move_type = b.move_type(f_pos,x_pos);
 					match &move_type {
 						MoveType::Illegal | MoveType::Capture => {
 							if obstacles == max_obstacles {
-								if *t_pos == x_pos {
+								if t_pos == x_pos {
 									return move_type;
 								} else {
 									return MoveType::Illegal;
@@ -41,7 +41,7 @@ impl Board {
 							obstacles = obstacles + 1;
 						},
 						MoveType::Move => {
-							if *t_pos == x_pos {
+							if t_pos == x_pos {
 								return move_type;
 							}
 						}
@@ -53,7 +53,7 @@ impl Board {
 			MoveType::Illegal
 		};
 
-		fn check_bishop(b:&Board, f_pos:&Pos, t_pos:&Pos, max_obstacles:u8) -> MoveType {
+		fn check_bishop(b: &Board, f_pos: Pos, t_pos: Pos, max_obstacles: u8) -> MoveType {
 			let add = ops::Add::add;
 			let sub = ops::Sub::sub;
 			
@@ -79,7 +79,7 @@ impl Board {
 			MoveType::Illegal
 		}
 
-		fn check_rook(b:&Board, f_pos:&Pos, t_pos:&Pos, max_obstacles:u8) -> MoveType {
+		fn check_rook(b: &Board, f_pos: Pos, t_pos: Pos, max_obstacles: u8) -> MoveType {
 			let add = ops::Add::add;
 			let sub = ops::Sub::sub;
 			let id = |x,_| x;
@@ -181,9 +181,9 @@ impl Board {
 		for c in 0..8 {
 			for r in 0..8 {
 				let f_pos = Pos::at(c,r).unwrap();
-				if let Some(f_tile) = self.at(&f_pos) {
+				if let Some(f_tile) = self.at(f_pos) {
 					if f_tile.color == self.player {
-						let moves = self.generate_legal_moves(&f_pos);
+						let moves = self.generate_legal_moves(f_pos);
 						for t_pos in moves {
 							all_moves.push((f_pos,t_pos));
 						}
@@ -194,14 +194,14 @@ impl Board {
 		all_moves
 	}
 
-	pub fn generate_legal_moves(&self, f_pos: &Pos) -> Vec<Pos> {
+	pub fn generate_legal_moves(&self, f_pos: Pos) -> Vec<Pos> {
 		let mut moves = Vec::new();
 
 		/* Generate possible moves from a given point in all directions */
-		fn generate_arm(moves:&mut Vec<Pos>, b:&Board, f_pos:&Pos, max_len:i8, f_c:fn(i8,i8)->i8, f_r:fn(i8,i8)->i8) {
+		fn generate_arm(moves: &mut Vec<Pos>, b: &Board, f_pos: Pos, max_len: i8, f_c:fn(i8,i8)->i8, f_r:fn(i8,i8)->i8) {
 			for i in 1..max_len+1 {
 				if let Some(t_pos) = Pos::at(f_c(f_pos.col,i), f_r(f_pos.row,i)) {
-					match b.move_type(f_pos,&t_pos) {
+					match b.move_type(f_pos,t_pos) {
 						MoveType::Move => moves.push(t_pos),
 						MoveType::Capture => { moves.push(t_pos); break; },
 						MoveType::Illegal => break
@@ -211,7 +211,7 @@ impl Board {
 		};
 
 		/* Generate possible bishop moves from a given point */
-		fn generate_bishop(moves:&mut Vec<Pos>, b:&Board, f_pos:&Pos, max_len:i8) {
+		fn generate_bishop(moves: &mut Vec<Pos>, b: &Board, f_pos: Pos, max_len: i8) {
 			let add = ops::Add::add;
 			let sub = ops::Sub::sub;
 
@@ -226,7 +226,7 @@ impl Board {
 		}
 
 		/* Generate possible rook moves from a given point */
-		fn generate_rook(moves:&mut Vec<Pos>, b:&Board, f_pos:&Pos, max_len:i8) {
+		fn generate_rook(moves: &mut Vec<Pos>, b: &Board, f_pos: Pos, max_len: i8) {
 			let add = ops::Add::add;
 			let sub = ops::Sub::sub;
 			let id = |x,_| x;
@@ -257,13 +257,13 @@ impl Board {
 
 					/* forward by 1 */
 					if let Some(t_pos) = Pos::at(f_pos.col, f_incr(f_pos.row,1)) {
-						if self.move_type(f_pos,&t_pos) == MoveType::Move {
+						if self.move_type(f_pos,t_pos) == MoveType::Move {
 							moves.push(t_pos);
 						}
 						if f_pos.row == start_row {
 							/* forward by 2 */
 							if let Some(t_pos) = Pos::at(f_pos.col, f_incr(f_pos.row,2)) {
-								if self.move_type(f_pos,&t_pos) == MoveType::Move {
+								if self.move_type(f_pos,t_pos) == MoveType::Move {
 									moves.push(t_pos);
 								}
 							}
@@ -272,7 +272,7 @@ impl Board {
 					/* Capture diagonally */
 					for i in [-1, 1].iter() {
 						if let Some(t_pos) = Pos::at(f_pos.col+i, f_incr(f_pos.row,1)) {
-							if self.move_type(f_pos,&t_pos) == MoveType::Capture {
+							if self.move_type(f_pos,t_pos) == MoveType::Capture {
 								moves.push(t_pos);
 							}
 						}
@@ -288,7 +288,7 @@ impl Board {
 					];
 					for (c,r) in tps.iter() {
 						if let Some(t_pos) = Pos::at(*c,*r) {
-							if self.move_type(f_pos,&t_pos) != MoveType::Illegal {
+							if self.move_type(f_pos,t_pos) != MoveType::Illegal {
 								moves.push(t_pos);
 							}
 						}
