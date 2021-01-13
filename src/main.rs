@@ -18,7 +18,8 @@ fn main() {
 	println!("");
 
 	/* Just for testing: AI playing against itself in infinite loop */
-	loop {
+	// loop {
+		{
 		let (score, mv) = maximize(&b, Value::MIN, Value::MAX, 0);
 		let (f_pos, t_pos) = mv.unwrap();
 		println!("{:?}: [{}{}]({})", b.player, f_pos, t_pos, score);
