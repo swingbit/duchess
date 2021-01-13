@@ -33,12 +33,12 @@ impl Color {
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub enum Piece {
-	Pawn,
-	Knight,
-	Bishop,
-	Rook,
-	Queen,
-	King,
+	Pawn = 0,
+	Knight = 1,
+	Bishop = 2,
+	Rook = 3,
+	Queen = 4,
+	King = 5,
 }
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
@@ -123,7 +123,6 @@ pub enum MoveType {
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub struct Board {
 	pub tiles: [[Option<Tile>; 8]; 8],
-	// pub value: i32,
 	pub player: Color,
 	pub king_pos: [Pos; 2]
 }
@@ -175,45 +174,5 @@ impl Board {
 			b.king_pos[t.color as usize] = t_pos;
 		}
 		b
-	}
-}
-
-pub trait Valuable {
-	fn value(&self) -> i32;
-}
-
-impl Valuable for Piece {
-	#[inline]
-	fn value(&self) -> i32 {
-		match &self {
-			Piece::Pawn => 100,
-			Piece::Knight => 350,
-			Piece::Bishop => 355,
-			Piece::Rook => 550,
-			Piece::Queen => 1100,
-			Piece::King => 1200,
-		}
-	}
-}
-
-impl Valuable for Tile {
-	#[inline]
-	fn value(&self) -> i32 {
-		match self.color {
-			Color::Black => return -self.piece.value(),
-			Color::White => return self.piece.value(),
-		}
-	}
-}
-
-impl Valuable for Board {
-	fn value(&self) -> i32 {
-		let mut v = 0;
-		for tile in self.tiles.iter().flat_map(|r| r.iter()) {
-			if let Some(tile) = tile {
-				v += tile.value();
-			}
-		}
-		return v;
 	}
 }

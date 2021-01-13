@@ -1,8 +1,10 @@
 mod board;
 mod generation;
+mod evaluation;
 mod minmax;
 
-use crate::board::{Board, Color, Valuable};
+use crate::board::{Board, Color};
+use crate::evaluation::{Valuable,Value};
 use crate::minmax::{maximize, minimize};
 
 fn main() {
@@ -17,12 +19,12 @@ fn main() {
 
 	/* Just for testing: AI playing against itself in infinite loop */
 	loop {
-		let (score, mv) = maximize(&b, i32::MIN, i32::MAX, 0);
+		let (score, mv) = maximize(&b, Value::MIN, Value::MAX, 0);
 		let (f_pos, t_pos) = mv.unwrap();
 		println!("{:?}: [{}{}]({})", b.player, f_pos, t_pos, score);
 		b = b.clone_apply_move(f_pos, t_pos);
 
-		let (score, mv) = minimize(&b, i32::MIN, i32::MAX, 0);
+		let (score, mv) = minimize(&b, Value::MIN, Value::MAX, 0);
 		let (f_pos, t_pos) = mv.unwrap();
 		println!("{:?}: [{}{}]({})", b.player, f_pos, t_pos, score);
 		b = b.clone_apply_move(f_pos, t_pos);

@@ -15,7 +15,8 @@ Because it's fun and because I needed an excuse to get accustomed to Rust.
   - make the engine [UCI](https://en.wikipedia.org/wiki/Universal_Chess_Interface)-compatible and use an available GUI
 - Evaluations and heuristics:
   - (done) simple board value based on pieces
-  - (missing) positional evaluation
+  - (done) positional evaluation
+  - (missing) more evaluations
 - Search algorithm:
   - (done) min/max
   - (missing) horizon effect
