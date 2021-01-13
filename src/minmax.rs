@@ -3,7 +3,7 @@ use std::cmp;
 use crate::board::{Board, Pos};
 use crate::evaluation::{Valuable,Value};
 
-const MAX_LEVELS: u8 = 1;
+const MAX_LEVELS: u8 = 5;
 const USE_ALPHA_BETA_PRUNING: bool = true;
 
 pub fn maximize(b: &Board, mut alpha: Value, beta: Value, level: u8) -> (Value, Option<(Pos, Pos)>) {
