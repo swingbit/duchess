@@ -259,12 +259,12 @@ impl Board {
 					if let Some(t_pos) = Pos::at(f_pos.col, f_incr(f_pos.row,1)) {
 						if self.move_type(f_pos,t_pos) == MoveType::Move {
 							moves.push(t_pos);
-						}
-						if f_pos.row == start_row {
-							/* forward by 2 */
-							if let Some(t_pos) = Pos::at(f_pos.col, f_incr(f_pos.row,2)) {
-								if self.move_type(f_pos,t_pos) == MoveType::Move {
-									moves.push(t_pos);
+							if f_pos.row == start_row {
+								/* forward by 2 */
+								if let Some(t_pos) = Pos::at(f_pos.col, f_incr(f_pos.row,2)) {
+									if self.move_type(f_pos,t_pos) == MoveType::Move {
+										moves.push(t_pos);
+									}
 								}
 							}
 						}
