@@ -127,7 +127,9 @@ impl Board {
 						/* forward by 1 or 2 */
 						if t_pos.col == f_pos.col {
 							if t_pos.row == f_incr(f_pos.row,1) ||
-									(f_pos.row == start_row && t_pos.row == f_incr(start_row,2)) {
+									(f_pos.row == start_row && 
+										self.at(Pos::at(f_pos.col,f_incr(start_row,1)).unwrap()).is_none() 
+										&& t_pos.row == f_incr(start_row,2)) {
 								return MoveType::Move;
 							}
 						}
