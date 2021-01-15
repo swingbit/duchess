@@ -5,8 +5,7 @@ mod minmax;
 mod uci;
 
 use crate::board::{Board, Color};
-use crate::evaluation::{Value};
-use crate::minmax::{maximize, minimize};
+use crate::minmax::{minmax};
 use crate::uci::{ucitest};
 
 extern crate vampirc_uci;
@@ -16,15 +15,9 @@ fn self_play_test() {
 
 	/* Just for testing: AI playing against itself in infinite loop */
 	loop {
-		let (score, mv) = maximize(&b, Value::MIN, Value::MAX, 0);
-		let (f_pos, t_pos) = mv.unwrap();
-		println!("{:?}: [{}{}]({})", b.player, f_pos, t_pos, score);
-		b = b.clone_apply_move(f_pos, t_pos);
-
-		let (score, mv) = minimize(&b, Value::MIN, Value::MAX, 0);
-		let (f_pos, t_pos) = mv.unwrap();
-		println!("{:?}: [{}{}]({})", b.player, f_pos, t_pos, score);
-		b = b.clone_apply_move(f_pos, t_pos);
+		let (score, mv) = minmax(&b);
+		println!("{:?}: [{}{}]({})", b.player, mv.f_pos, mv.t_pos, score);
+		b = b.clone_apply_move(mv.f_pos, mv.t_pos);
 	}
 }
 fn main() {

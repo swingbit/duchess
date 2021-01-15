@@ -1,12 +1,26 @@
 use std::cmp;
 
-use crate::board::{Board, Pos};
+use crate::board::{Board, Pos, Move,Color};
 use crate::evaluation::{Valuable,Value};
 
 const MAX_LEVELS: u8 = 5;
 const USE_ALPHA_BETA_PRUNING: bool = true;
 
-pub fn maximize(b: &Board, mut alpha: Value, beta: Value, level: u8) -> (Value, Option<(Pos, Pos)>) {
+pub fn minmax(b: &Board) -> (Value, Move) {
+	let vp;
+	match b.player {
+		Color::Black => vp = minimize(&b, Value::MIN, Value::MAX, 0),
+		Color::White => vp = maximize(&b, Value::MIN, Value::MAX, 0),
+	}
+	if let (v,Some((f_pos,t_pos))) = vp {
+		return (v, Move {f_pos,t_pos});
+	} else {
+		panic!("Couldn't find any move");
+	}
+
+}
+
+fn maximize(b: &Board, mut alpha: Value, beta: Value, level: u8) -> (Value, Option<(Pos, Pos)>) {
 	/* TODO:
 	   - if checkmate return Value::MAX
 	   - move ordering
@@ -36,7 +50,7 @@ pub fn maximize(b: &Board, mut alpha: Value, beta: Value, level: u8) -> (Value, 
 	(best_score, best_move)
 }
 
-pub fn minimize(b: &Board, alpha: Value, mut beta: Value, level: u8) -> (Value, Option<(Pos, Pos)>) {
+fn minimize(b: &Board, alpha: Value, mut beta: Value, level: u8) -> (Value, Option<(Pos, Pos)>) {
 	/* TODO:
 	   - if checkmate return Value::MIN
 	   - move ordering

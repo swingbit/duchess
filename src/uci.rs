@@ -2,8 +2,7 @@ use std::io::{self, BufRead};
 
 use vampirc_uci::{UciMessage,UciSquare,UciMove,parse_one};
 use crate::board::{Board,Pos,Move,Color};
-use crate::evaluation::{Value};
-use crate::minmax::{minimize};
+use crate::minmax::{minmax};
 
 impl Pos {
 	pub fn from_uci(us: UciSquare) -> Option<Pos> {
@@ -19,13 +18,13 @@ impl Pos {
 }
 
 impl Move {
-	pub fn from_uci(um: UciMove) -> Option<Move> {
+	pub fn from_uci(um: UciMove) -> Move {
 		if let Some(f_pos) = Pos::from_uci(um.from) {
 			if let Some(t_pos) = Pos::from_uci(um.to) {
-				return Some(Move {f_pos, t_pos});
+				return Move {f_pos, t_pos};
 			}
 		}
-		None
+		panic!("Could not conver uci move: {}", um);
 	}
 
 	pub fn to_uci(&self) -> UciMove {
@@ -40,6 +39,7 @@ impl Move {
 
 pub fn ucitest() {
 	let mut b: Board = Board::new(Color::White);
+
 	for line in io::stdin().lock().lines() {
 		let msg: UciMessage = parse_one(&line.unwrap());
 		match msg {
@@ -52,9 +52,9 @@ pub fn ucitest() {
 				println!("{}", UciMessage::ReadyOk);
 			},
 			UciMessage::Position { startpos, fen, moves } => {
-				// in principle, apply all moves from the starting positions
-				// for brevity, only apply the last one to he last board
-				if let Some(lastmove) = Move::from_uci(*moves.last().unwrap()) {
+				b = Board::new(Color::White);
+				for mv in moves.iter() {
+					let lastmove = Move::from_uci(*mv);
 					b = b.clone_apply_move(lastmove.f_pos, lastmove.t_pos);
 				}
 			},
@@ -67,15 +67,13 @@ pub fn ucitest() {
 			UciMessage::Go { time_control, search_control } => {
 				// TODO
 				// play black
-				let (_score, mv) = minimize(&b, Value::MIN, Value::MAX, 0);
-				if let Some((f_pos,t_pos)) = mv {
-					let bestmove = UciMessage::BestMove { 
-						best_move: UciMove::from_to(f_pos.to_uci(), t_pos.to_uci()),
-						ponder: None 
-					};
-					b = b.clone_apply_move(f_pos, t_pos);
-					println!("{}", bestmove);
-				}
+				let (_score, mv) = minmax(&b);
+				let bestmove = UciMessage::BestMove { 
+					best_move: mv.to_uci(),
+					ponder: None 
+				};
+				b = b.clone_apply_move(mv.f_pos, mv.t_pos);
+				println!("{}", bestmove);
 			},
 			_ => eprintln!(" Don't know what to do")
 		}
