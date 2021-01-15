@@ -2,20 +2,17 @@ mod board;
 mod generation;
 mod evaluation;
 mod minmax;
+mod uci;
 
 use crate::board::{Board, Color};
-use crate::evaluation::{Valuable,Value};
+use crate::evaluation::{Value};
 use crate::minmax::{maximize, minimize};
+use crate::uci::{ucitest};
 
-fn main() {
+extern crate vampirc_uci;
+
+fn self_play_test() {
 	let mut b: Board = Board::new(Color::White);
-
-	println!("The Board");
-	for r in b.tiles.iter() {
-		println!("{:?}", r);
-	}
-	println!("Initial board value = {}", &b.value());
-	println!("");
 
 	/* Just for testing: AI playing against itself in infinite loop */
 	loop {
@@ -29,6 +26,10 @@ fn main() {
 		println!("{:?}: [{}{}]({})", b.player, f_pos, t_pos, score);
 		b = b.clone_apply_move(f_pos, t_pos);
 	}
+}
+fn main() {
+	// self_play_test();
+	ucitest();
 }
 
 #[cfg(test)]

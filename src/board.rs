@@ -55,6 +55,12 @@ pub struct Pos {
 	pub col: i8,
 }
 
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
+pub struct Move {
+	pub f_pos: Pos,
+	pub t_pos: Pos,
+}
+
 impl fmt::Display for Pos {
 	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
 		let (x, y) = self.to_coord();
@@ -74,6 +80,23 @@ impl FromStr for Pos {
 	}
 }
 
+impl fmt::Display for Move {
+	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+		write!(f, "{}{}", self.f_pos, self.t_pos)
+	}
+}
+
+impl FromStr for Move {
+	type Err = ParsePosError;
+
+	fn from_str(s: &str) -> Result<Self, Self::Err> {
+		let f_pos = s[0..2].parse::<Pos>()?;
+		let t_pos = s[2..4].parse::<Pos>()?;
+		Ok(Move {f_pos, t_pos})
+	}
+}
+
+
 impl Pos {
 	pub fn at(col: i8, row: i8) -> Option<Pos> {
 		if col < 0 || row < 0 || col > 7 || row > 7 {
@@ -83,7 +106,7 @@ impl Pos {
 		}
 	}
 
-	fn from_coord(s: &str) -> Option<Pos> {
+	pub fn from_coord(s: &str) -> Option<Pos> {
 		if s.len() != 2 {
 			return None;
 		}
@@ -112,6 +135,7 @@ impl Pos {
 		)
 	}
 }
+
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub enum MoveType {
