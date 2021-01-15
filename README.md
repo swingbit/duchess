@@ -13,11 +13,11 @@ Because it's fun and because I needed an excuse to get accustomed to Rust.
   - (in progress) make the engine [UCI](https://en.wikipedia.org/wiki/Universal_Chess_Interface)-compatible and use an available GUI
 - Evaluations and heuristics:
   - (done) simple board value based on pieces
-  - (done) positional evaluation
+  - (done) simplified positional evaluation
   - (missing) more evaluations
 - Search algorithm:
   - (done) min/max
-  - (missing) horizon effect
+  - (missing) quiescence search
 - Game oprtimizations:
   - (done) alpha/beta pruning
   - (missing) move ordering
