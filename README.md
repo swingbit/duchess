@@ -23,6 +23,5 @@ Because it's fun and because I needed an excuse to get accustomed to Rust.
   - (missing) move ordering
 - Code optimizations:
   - (missing) more efficient board representations
-  - (missing) multi-threading
 
 
