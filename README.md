@@ -16,12 +16,11 @@ Because it's fun and because I needed an excuse to get accustomed to Rust.
   - (done) simplified positional evaluation
   - (missing) more evaluations
 - Search algorithm:
-  - (done) min/max
-  - (missing) quiescence search
-- Game oprtimizations:
-  - (done) alpha/beta pruning
+  - (done) Minmax with α-β pruning
+  - (done) Negamax with α-β pruning
+  - (missing) Principal Variation Search / Negascout with α-β pruning
+- Optional optimizations:
   - (missing) move ordering
-- Code optimizations:
   - (missing) more efficient board representations
 
 

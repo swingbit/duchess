@@ -1,12 +1,14 @@
 mod board;
 mod generation;
 mod evaluation;
+mod ordering;
 mod minmax;
+mod negamax;
 mod uci;
 
 use crate::board::{Board, Color};
 use crate::minmax::{minmax};
-use crate::uci::{ucitest};
+use crate::uci::{uci_manager};
 
 extern crate vampirc_uci;
 
@@ -15,14 +17,16 @@ fn self_play_test() {
 
 	/* Just for testing: AI playing against itself in infinite loop */
 	loop {
-		let (score, mv) = minmax(&b);
+		let (score, mv) = minmax(&b,&None);
 		println!("{:?}: [{}{}]({})", b.player, mv.f_pos, mv.t_pos, score);
 		b = b.clone_apply_move(mv.f_pos, mv.t_pos);
 	}
 }
-fn main() {
+
+#[tokio::main]
+async fn main() {
 	// self_play_test();
-	ucitest();
+	uci_manager().await;
 }
 
 #[cfg(test)]
