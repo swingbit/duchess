@@ -1,8 +1,10 @@
 
 use vampirc_uci::{UciMessage,UciSquare,UciMove,parse_one};
 use crate::board::{Board,Pos,Move,Color};
+use crate::evaluation::{Value};
 use crate::minmax::{minmax};
 use crate::negamax::{negamax};
+use crate::misc::*;
 
 impl Pos {
 	pub fn from_uci(us: UciSquare) -> Pos {
@@ -37,7 +39,7 @@ impl Move {
 	}
 }
 
-pub async fn uci_manager() {
+pub async fn uci_manager(opts: &Options) {
 	use tokio::sync::{mpsc};
 	use tokio::io;
 	use tokio::io::AsyncBufReadExt;
@@ -88,7 +90,14 @@ pub async fn uci_manager() {
 					},
 					UciMessage::Go { time_control, search_control } => {
 						// TODO: spawn this
-						let (_score, mv) = negamax(&b,&Some(sch_mgr_tx.clone()));
+						let res:(Value,Move);
+						match opts.search_algo {
+							SearchAlgorithm::Minmax => res = minmax(&b, &Some(sch_mgr_tx.clone()), opts),
+							SearchAlgorithm::Negamax => res = negamax(&b, &Some(sch_mgr_tx.clone()), opts),
+							_ => panic!("Algorithm {:?} not supported", opts.search_algo)
+						}
+						let score = res.0;
+						let mv = res.1;
 						let bestmove = UciMessage::BestMove { 
 							best_move: mv.to_uci(),
 							ponder: None,

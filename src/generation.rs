@@ -1,6 +1,6 @@
 use std::ops;
 
-use crate::board::{Board,Pos,MoveType,Piece,Color};
+use crate::board::{Board,Pos,Move,MoveType,Piece,Color};
 
 impl Board {
 	fn move_type(&self, f_pos: Pos, t_pos: Pos) -> MoveType {
@@ -178,7 +178,7 @@ impl Board {
 	}
 
 	
-	pub fn generate_all_legal_moves(&self) -> Vec<(Pos,Pos)> {
+	pub fn generate_all_legal_moves(&self) -> Vec<Move> {
 		let mut all_moves = Vec::new();
 		for c in 0..8 {
 			for r in 0..8 {
@@ -187,7 +187,7 @@ impl Board {
 					if f_tile.color == self.player {
 						let moves = self.generate_legal_moves(f_pos);
 						for t_pos in moves {
-							all_moves.push((f_pos,t_pos));
+							all_moves.push(Move{f_pos,t_pos});
 						}
 					}
 				}

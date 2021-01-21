@@ -1,6 +1,7 @@
 use std::error::Error;
 use std::fmt;
 use std::str::FromStr;
+use crate::evaluation::{Value};
 
 #[derive(Clone, Debug)]
 pub struct ParsePosError;
@@ -148,7 +149,8 @@ pub enum MoveType {
 pub struct Board {
 	pub tiles: [[Option<Tile>; 8]; 8],
 	pub player: Color,
-	pub king_pos: [Pos; 2]
+	pub king_pos: [Pos; 2],
+	pub stored_value: Option<Value>,
 }
 
 impl Board {
@@ -157,7 +159,8 @@ impl Board {
 			tiles: [[None; 8]; 8],
 			// value: 0,
 			player,
-			king_pos: [Pos::at(4,7).unwrap(), Pos::at(4,0).unwrap()]
+			king_pos: [Pos::at(4,7).unwrap(), Pos::at(4,0).unwrap()],
+			stored_value: None,
 		};
 
 		b.tiles[0][0] = Some(Tile {piece: Piece::Rook, color: Color::White});
@@ -198,5 +201,17 @@ impl Board {
 			b.king_pos[t.color as usize] = t_pos;
 		}
 		b
+	}
+}
+
+#[cfg(test)]
+mod tests {
+	use crate::board::Pos;
+	#[test]
+	pub fn test_parse_pos() {
+		let coords_in = "G8";
+		let pos = coords_in.parse::<Pos>().expect("legal");
+		let coords_out = pos.to_string();
+		assert_eq!(coords_in.to_ascii_lowercase(), coords_out);
 	}
 }

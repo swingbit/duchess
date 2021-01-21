@@ -163,7 +163,7 @@ pub trait Valuable {
 impl Valuable for Piece {
 	#[inline]
 	fn value(&self) -> Value {
-		match &self {
+		match self {
 			Piece::Pawn => 100,
 			Piece::Knight => 320,
 			Piece::Bishop => 330,
@@ -183,6 +183,10 @@ impl Valuable for Tile {
 
 impl Valuable for Board {
 	fn value(&self) -> Value {
+	// 	if let Some(v) = self.stored_value {
+	// 		return v;
+	// 	}
+
 		let mut v = 0;
 		for c in 0..8 {
 			for r in 0..8 {
@@ -201,6 +205,7 @@ impl Valuable for Board {
 				}
 			}
 		}
-		return v;
+		// self.stored_value = Some(v);
+		v
 	}
 }
