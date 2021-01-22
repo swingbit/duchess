@@ -1,44 +1,48 @@
 use std::cmp;
 
-use crate::board::{Board,Move,Color};
-use crate::evaluation::{Valuable,Value};
-use crate::ordering::move_ordering;
+use crate::board::{Board, Color, Move};
+use crate::evaluation::{Valuable, Value};
 use crate::misc::*;
+use crate::ordering::move_ordering;
 
-const MAX_DEPTH: u8 = 5;
-const USE_ALPHA_BETA_PRUNING: bool = true;
-
-
-pub fn minmax(b: &Board, 
+pub fn minmax(
+	b: &Board,
 	tx: &Option<tokio::sync::mpsc::Sender<SearchInfo>>,
-	opts: &Options) -> (Value, Move) {
+	opts: &Options,
+) -> (Value, Move) {
 	let res;
 	match b.player {
 		Color::Black => res = minimize(&b, Value::MIN, Value::MAX, 0, tx, opts),
 		Color::White => res = maximize(&b, Value::MIN, Value::MAX, 0, tx, opts),
 	}
-	if let (v,Some(mv)) = res {
+	if let (v, Some(mv)) = res {
 		return (v, mv);
 	} else {
 		panic!("Couldn't find any move");
 	}
-
 }
 
-fn maximize(b: &Board, mut alpha: Value, beta: Value, depth: u8,
+fn maximize(
+	b: &Board,
+	mut alpha: Value,
+	beta: Value,
+	depth: u8,
 	tx: &Option<tokio::sync::mpsc::Sender<SearchInfo>>,
-	opts: &Options) -> (Value, Option<Move>) {
-
-	if depth == MAX_DEPTH {
+	opts: &Options,
+) -> (Value, Option<Move>) {
+	if depth == opts.max_depth {
 		return (b.value(), None);
 	}
-	let mut best_score: Value = Value::MIN;
-	let mut best_move = None;
+
 	let moves = b.generate_all_legal_moves();
-	let mut bs:Vec<(Move,Board)> = 
-		moves.iter().map(|&x| (x, b.clone_apply_move(x.f_pos,x.t_pos))).collect();
+	let mut bs: Vec<(Move, Board)> = moves
+		.iter()
+		.map(|&x| (x, b.clone_apply_move(x.f_pos, x.t_pos)))
+		.collect();
 	move_ordering(&mut bs, opts);
 
+	let mut best_score: Value = Value::MIN;
+	let mut best_move = None;
 	for (mv, child) in bs {
 		let score = minimize(&child, alpha, beta, depth + 1, tx, opts).0;
 		if score > best_score {
@@ -47,7 +51,7 @@ fn maximize(b: &Board, mut alpha: Value, beta: Value, depth: u8,
 			}
 			best_score = score;
 		}
-		if USE_ALPHA_BETA_PRUNING {
+		if opts.alpha_beta {
 			alpha = cmp::max(alpha, best_score);
 			if alpha >= beta {
 				break;
@@ -57,20 +61,27 @@ fn maximize(b: &Board, mut alpha: Value, beta: Value, depth: u8,
 	(best_score, best_move)
 }
 
-fn minimize(b: &Board, alpha: Value, mut beta: Value, depth: u8,
+fn minimize(
+	b: &Board,
+	alpha: Value,
+	mut beta: Value,
+	depth: u8,
 	tx: &Option<tokio::sync::mpsc::Sender<SearchInfo>>,
-	opts: &Options) -> (Value, Option<Move>) {
-
-	if depth == MAX_DEPTH {
+	opts: &Options,
+) -> (Value, Option<Move>) {
+	if depth == opts.max_depth {
 		return (b.value(), None);
 	}
-	let mut best_score: Value = Value::MAX;
-	let mut best_move = None;
+
 	let moves = b.generate_all_legal_moves();
-	let mut bs:Vec<(Move,Board)> = 
-		moves.iter().map(|&x| (x, b.clone_apply_move(x.f_pos,x.t_pos))).collect();
+	let mut bs: Vec<(Move, Board)> = moves
+		.iter()
+		.map(|&x| (x, b.clone_apply_move(x.f_pos, x.t_pos)))
+		.collect();
 	move_ordering(&mut bs, opts);
 
+	let mut best_score: Value = Value::MAX;
+	let mut best_move = None;
 	for (mv, child) in bs {
 		let score = maximize(&child, alpha, beta, depth + 1, tx, opts).0;
 		if score < best_score {
@@ -79,7 +90,7 @@ fn minimize(b: &Board, alpha: Value, mut beta: Value, depth: u8,
 			}
 			best_score = score;
 		}
-		if USE_ALPHA_BETA_PRUNING {
+		if opts.alpha_beta {
 			beta = cmp::min(beta, best_score);
 			if beta <= alpha {
 				break;

@@ -23,7 +23,7 @@ fn self_play_test(opts: &Options) {
 	let mut b: Board = Board::new(Color::White);
 	/* Just for testing: AI playing against itself in a loop */
 
-	for _ in 0..30 {
+	for _ in 0..20 {
 		let res:(Value,Move);
 
 		match opts.search_algo {
@@ -80,6 +80,11 @@ async fn main() {
 				.default_value("5")
 				.help("Maximum depth of the search algorithm"),
 		)
+		.arg(
+			Arg::with_name("disable-alphabeta")
+				.long("disable-alphabeta")
+				.help("Disable alpha-beta pruning"),
+		)
 		.get_matches();
 
 		if let Some(m) = matches.value_of("ui") {
@@ -102,6 +107,7 @@ async fn main() {
 				opts.max_depth = val;
 			}
 		}
+		opts.alpha_beta = !matches.is_present("disable-alphabeta");
 		// println!("Options:\n {:#?}",opts);
 		match opts.ui {
 			Ui::Uci => uci_manager(&opts.clone()).await,

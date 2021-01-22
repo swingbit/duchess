@@ -20,7 +20,7 @@ Because it's fun and because I needed an excuse to get accustomed to Rust.
   - (done) Negamax with α-β pruning
   - (missing) Principal Variation Search / Negascout with α-β pruning
 - Optional optimizations:
-  - (missing) move ordering
+  - (partial) move ordering
   - (missing) more efficient board representations
 
 

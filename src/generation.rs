@@ -16,10 +16,10 @@ impl Board {
 		MoveType::Illegal
 	}
 
-	/* Checks whether a move is valid
-	   Not needed for generated moves, only for human moves
-	   Allows to "see through" a specified number of obstacles
-	*/
+	/// Checks whether a move is valid.
+	/// Not needed for generated moves, only for human moves.
+	/// Allows to "see through" a specified number of obstacles
+	#[allow(dead_code)]
 	pub fn check_move(&self, f_pos: Pos, t_pos: Pos, max_obstacles: u8) -> MoveType {
 
 		/* Checks possible moves from a given point in all directions */
@@ -199,7 +199,7 @@ impl Board {
 	pub fn generate_legal_moves(&self, f_pos: Pos) -> Vec<Pos> {
 		let mut moves = Vec::new();
 
-		/* Generate possible moves from a given point in all directions */
+		/// Generate possible moves from a given point in all directions
 		fn generate_arm(moves: &mut Vec<Pos>, b: &Board, f_pos: Pos, max_len: i8, f_c:fn(i8,i8)->i8, f_r:fn(i8,i8)->i8) {
 			for i in 1..max_len+1 {
 				if let Some(t_pos) = Pos::at(f_c(f_pos.col,i), f_r(f_pos.row,i)) {
@@ -212,7 +212,7 @@ impl Board {
 			}
 		};
 
-		/* Generate possible bishop moves from a given point */
+		/// Generate possible bishop moves from a given point
 		fn generate_bishop(moves: &mut Vec<Pos>, b: &Board, f_pos: Pos, max_len: i8) {
 			let add = ops::Add::add;
 			let sub = ops::Sub::sub;
@@ -227,7 +227,7 @@ impl Board {
 			generate_arm(moves,b,f_pos,max_len,sub,sub);
 		}
 
-		/* Generate possible rook moves from a given point */
+		/// Generate possible rook moves from a given point
 		fn generate_rook(moves: &mut Vec<Pos>, b: &Board, f_pos: Pos, max_len: i8) {
 			let add = ops::Add::add;
 			let sub = ops::Sub::sub;

@@ -75,20 +75,20 @@ pub async fn uci_manager(opts: &Options) {
 					UciMessage::IsReady => {
 						println!("{}", UciMessage::ReadyOk);
 					},
-					UciMessage::Position { startpos, fen, moves } => {
+					UciMessage::Position { startpos:_, fen:_, moves } => {
 						b = Board::new(Color::White);
 						for mv in moves.iter() {
 							let lastmove = Move::from_uci(*mv);
 							b = b.clone_apply_move(lastmove.f_pos, lastmove.t_pos);
 						}
 					},
-					UciMessage::SetOption { name, value } => {
+					UciMessage::SetOption { name:_, value:_ } => {
 						// TODO
 					},
 					UciMessage::UciNewGame => {
 						b = Board::new(Color::White);
 					},
-					UciMessage::Go { time_control, search_control } => {
+					UciMessage::Go { time_control:_, search_control:_} => {
 						// TODO: spawn this
 						let res:(Value,Move);
 						match opts.search_algo {
@@ -96,7 +96,7 @@ pub async fn uci_manager(opts: &Options) {
 							SearchAlgorithm::Negamax => res = negamax(&b, &Some(sch_mgr_tx.clone()), opts),
 							_ => panic!("Algorithm {:?} not supported", opts.search_algo)
 						}
-						let score = res.0;
+						let _score = res.0;
 						let mv = res.1;
 						let bestmove = UciMessage::BestMove { 
 							best_move: mv.to_uci(),

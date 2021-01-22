@@ -63,6 +63,7 @@ pub struct Options {
 	pub move_ordering: MoveOrdering,
 	pub max_depth: u8,
 	pub ui: Ui,
+	pub alpha_beta: bool,
 }
 
 pub static OPTS_DEFAULT: Options = Options {
@@ -70,10 +71,11 @@ pub static OPTS_DEFAULT: Options = Options {
 	move_ordering: MoveOrdering::Eval,
 	max_depth: 5,
 	ui: Ui::Uci,
+	alpha_beta: true,
 };
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub struct SearchInfo {
 	pub depth: u8,
-	best_move: Move,
+	pub best_move: Move,
 }
