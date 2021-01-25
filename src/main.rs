@@ -23,7 +23,7 @@ fn self_play_test(opts: &Options) {
 	let mut b: Board = Board::new(Color::White);
 	/* Just for testing: AI playing against itself in a loop */
 
-	for _ in 0..20 {
+	for _ in 0..10 {
 		let res:(Value,Move);
 
 		match opts.search_algo {

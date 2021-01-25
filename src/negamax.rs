@@ -10,19 +10,19 @@ pub fn negamax(
 	tx: &Option<tokio::sync::mpsc::Sender<SearchInfo>>,
 	opts: &Options,
 ) -> (Value, Move) {
-	let res;
 	match b.player {
-		Color::Black => res = negamax_search(&b, Value::MIN, Value::MAX, 0, -1, tx, opts),
-		Color::White => res = negamax_search(&b, Value::MIN, Value::MAX, 0, 1, tx, opts),
-	}
-	if let (v, Some(mv)) = res {
-		match b.player {
-			Color::Black => return (-v, mv),
-			Color::White => return (v, mv),
+		Color::Black => {
+			if let (v, Some(mv)) = negamax_search(&b, Value::MIN+1, Value::MAX-1, 0, -1, tx, opts) {
+				return (-v, mv);
+			}
+		},
+		Color::White => {
+			if let (v, Some(mv)) = negamax_search(&b, Value::MIN+1, Value::MAX-1, 0, 1, tx, opts) {
+				return (-v, mv);
+			}
 		}
-	} else {
-		panic!("Couldn't find any move");
 	}
+	panic!("Couldn't find any move");
 }
 
 fn negamax_search(

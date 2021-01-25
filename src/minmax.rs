@@ -17,9 +17,8 @@ pub fn minmax(
 	}
 	if let (v, Some(mv)) = res {
 		return (v, mv);
-	} else {
-		panic!("Couldn't find any move");
 	}
+	panic!("Couldn't find any move");
 }
 
 fn maximize(

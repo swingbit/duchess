@@ -24,7 +24,7 @@ pub enum Color {
 }
 impl Color {
 	#[inline]
-	fn swap(&self) -> Color {
+	pub fn swap(&self) -> Color {
 		match self {
 			Color::White => Color::Black,
 			Color::Black => Color::White,
