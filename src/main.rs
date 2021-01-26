@@ -3,14 +3,14 @@ use clap::{App, Arg};
 mod board;
 mod evaluation;
 mod generation;
-mod minmax;
+mod minimax;
 mod misc;
 mod negamax;
 mod ordering;
 mod uci;
 
 use crate::board::{Board,Color,Move};
-use crate::minmax::minmax;
+use crate::minimax::minimax;
 use crate::negamax::negamax;
 use crate::evaluation::{Value};
 use crate::uci::{uci_manager};
@@ -27,7 +27,7 @@ fn self_play_test(opts: &Options) {
 		let res:(Value,Move);
 
 		match opts.search_algo {
-			SearchAlgorithm::Minmax => res = minmax(&b, &None, opts),
+			SearchAlgorithm::Minmax => res = minimax(&b, &None, opts),
 			SearchAlgorithm::Negamax => res = negamax(&b, &None, opts),
 			_ => panic!("Algorithm {:?} not supported", opts.search_algo)
 		}

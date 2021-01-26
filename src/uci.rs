@@ -2,7 +2,7 @@
 use vampirc_uci::{UciMessage,UciSquare,UciMove,parse_one};
 use crate::board::{Board,Pos,Move,Color};
 use crate::evaluation::{Value};
-use crate::minmax::{minmax};
+use crate::minimax::{minimax};
 use crate::negamax::{negamax};
 use crate::misc::*;
 
@@ -92,7 +92,7 @@ pub async fn uci_manager(opts: &Options) {
 						// TODO: spawn this
 						let res:(Value,Move);
 						match opts.search_algo {
-							SearchAlgorithm::Minmax => res = minmax(&b, &Some(sch_mgr_tx.clone()), opts),
+							SearchAlgorithm::Minmax => res = minimax(&b, &Some(sch_mgr_tx.clone()), opts),
 							SearchAlgorithm::Negamax => res = negamax(&b, &Some(sch_mgr_tx.clone()), opts),
 							_ => panic!("Algorithm {:?} not supported", opts.search_algo)
 						}

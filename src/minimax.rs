@@ -5,7 +5,7 @@ use crate::evaluation::{Valuable, Value};
 use crate::misc::*;
 use crate::ordering::move_ordering;
 
-pub fn minmax(
+pub fn minimax(
 	b: &Board,
 	tx: &Option<tokio::sync::mpsc::Sender<SearchInfo>>,
 	opts: &Options,

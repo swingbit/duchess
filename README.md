@@ -16,7 +16,7 @@ Because it's fun and because I needed an excuse to get accustomed to Rust.
   - (done) simplified positional evaluation
   - (missing) more evaluations
 - Search algorithm:
-  - (done) Minmax with α-β pruning
+  - (done) Minimax with α-β pruning
   - (done) Negamax with α-β pruning
   - (missing) Principal Variation Search / Negascout with α-β pruning
 - Optional optimizations:
