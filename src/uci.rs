@@ -92,7 +92,7 @@ pub async fn uci_manager(opts: &Options) {
 						// TODO: spawn this
 						let res:(Value,Move);
 						match opts.search_algo {
-							SearchAlgorithm::Minmax => res = minimax(&b, &Some(sch_mgr_tx.clone()), opts),
+							SearchAlgorithm::Minimax => res = minimax(&b, &Some(sch_mgr_tx.clone()), opts),
 							SearchAlgorithm::Negamax => res = negamax(&b, &Some(sch_mgr_tx.clone()), opts),
 							_ => panic!("Algorithm {:?} not supported", opts.search_algo)
 						}

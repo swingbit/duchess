@@ -27,7 +27,7 @@ fn self_play_test(opts: &Options) {
 		let res:(Value,Move);
 
 		match opts.search_algo {
-			SearchAlgorithm::Minmax => res = minimax(&b, &None, opts),
+			SearchAlgorithm::Minimax => res = minimax(&b, &None, opts),
 			SearchAlgorithm::Negamax => res = negamax(&b, &None, opts),
 			_ => panic!("Algorithm {:?} not supported", opts.search_algo)
 		}
@@ -59,7 +59,7 @@ async fn main() {
 				.short("a")
 				.long("algorithm")
 				.takes_value(true)
-				.possible_values(&["minmax", "negamax"])
+				.possible_values(&["minimax", "negamax"])
 				.default_value("negamax")
 				.help("Search algorithm"),
 		)
@@ -81,8 +81,8 @@ async fn main() {
 				.help("Maximum depth of the search algorithm"),
 		)
 		.arg(
-			Arg::with_name("disable-alphabeta")
-				.long("disable-alphabeta")
+			Arg::with_name("no-alphabeta")
+				.long("no-alphabeta")
 				.help("Disable alpha-beta pruning"),
 		)
 		.get_matches();
@@ -107,7 +107,7 @@ async fn main() {
 				opts.max_depth = val;
 			}
 		}
-		opts.alpha_beta = !matches.is_present("disable-alphabeta");
+		opts.alpha_beta = !matches.is_present("no-alphabeta");
 		// println!("Options:\n {:#?}",opts);
 		match opts.ui {
 			Ui::Uci => uci_manager(&opts.clone()).await,

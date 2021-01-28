@@ -12,8 +12,8 @@ pub fn minimax(
 ) -> (Value, Move) {
 	let res;
 	match b.player {
-		Color::Black => res = minimize(&b, Value::MIN, Value::MAX, 0, tx, opts),
-		Color::White => res = maximize(&b, Value::MIN, Value::MAX, 0, tx, opts),
+		Color::Black => res = minimize(b, Value::MIN, Value::MAX, 0, tx, opts),
+		Color::White => res = maximize(b, Value::MIN, Value::MAX, 0, tx, opts),
 	}
 	if let (v, Some(mv)) = res {
 		return (v, mv);
@@ -38,15 +38,15 @@ fn maximize(
 		.iter()
 		.map(|&x| (x, b.clone_apply_move(x.f_pos, x.t_pos)))
 		.collect();
-	move_ordering(&mut bs, opts);
+	move_ordering(&mut bs, 1, opts);
 
 	let mut best_score: Value = Value::MIN;
 	let mut best_move = None;
-	for (mv, child) in bs {
-		let score = minimize(&child, alpha, beta, depth + 1, tx, opts).0;
+	for (mv, child) in bs.iter() {
+		let score = minimize(child, alpha, beta, depth + 1, tx, opts).0;
 		if score > best_score {
 			if depth == 0 {
-				best_move = Some(mv);
+				best_move = Some(*mv);
 			}
 			best_score = score;
 		}
@@ -77,15 +77,15 @@ fn minimize(
 		.iter()
 		.map(|&x| (x, b.clone_apply_move(x.f_pos, x.t_pos)))
 		.collect();
-	move_ordering(&mut bs, opts);
+	move_ordering(&mut bs, 1, opts);
 
 	let mut best_score: Value = Value::MAX;
 	let mut best_move = None;
-	for (mv, child) in bs {
-		let score = maximize(&child, alpha, beta, depth + 1, tx, opts).0;
+	for (mv, child) in bs.iter() {
+		let score = maximize(child, alpha, beta, depth + 1, tx, opts).0;
 		if score < best_score {
 			if depth == 0 {
-				best_move = Some(mv);
+				best_move = Some(*mv);
 			}
 			best_score = score;
 		}

@@ -3,7 +3,7 @@ use crate::board::{Move};
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub enum SearchAlgorithm {
-	Minmax,
+	Minimax,
 	Negamax,
 	Pvs,
 }
@@ -12,7 +12,7 @@ impl FromStr for SearchAlgorithm {
 
 	fn from_str(input: &str) -> Result<SearchAlgorithm, Self::Err> {
 		match input.to_lowercase().as_str() {
-			"minmax" => Ok(SearchAlgorithm::Minmax),
+			"minimax" => Ok(SearchAlgorithm::Minimax),
 			"negamax" => Ok(SearchAlgorithm::Negamax),
 			"pvs" => Ok(SearchAlgorithm::Pvs),
 			_ => Err(()),

@@ -1,6 +1,8 @@
 use std::error::Error;
 use std::fmt;
 use std::str::FromStr;
+use std::cell::Cell;
+
 use crate::evaluation::{Value};
 
 #[derive(Clone, Debug)]
@@ -145,22 +147,21 @@ pub enum MoveType {
 	Move,
 }
 
-#[derive(Debug, Copy, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Board {
 	pub tiles: [[Option<Tile>; 8]; 8],
 	pub player: Color,
 	pub king_pos: [Pos; 2],
-	pub stored_value: Option<Value>,
+	pub stored_value: Cell<Option<Value>>,
 }
 
 impl Board {
 	pub fn new(player: Color) -> Board {
 		let mut b = Board {
 			tiles: [[None; 8]; 8],
-			// value: 0,
 			player,
 			king_pos: [Pos::at(4,7).unwrap(), Pos::at(4,0).unwrap()],
-			stored_value: None,
+			stored_value: Cell::default(),
 		};
 
 		b.tiles[0][0] = Some(Tile {piece: Piece::Rook, color: Color::White});
@@ -200,6 +201,7 @@ impl Board {
 		if t.piece == Piece::King {
 			b.king_pos[t.color as usize] = t_pos;
 		}
+		b.stored_value = Cell::default();
 		b
 	}
 }

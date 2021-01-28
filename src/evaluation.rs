@@ -113,6 +113,9 @@ impl Valuable for Tile {
 
 impl Valuable for Board {
 	fn value(&self) -> Value {
+		if let Some(v) = self.stored_value.get() {
+			return v;
+		}
 		let mut v = 0;
 		for c in 0..8 {
 			for r in 0..8 {
@@ -131,6 +134,7 @@ impl Valuable for Board {
 				}
 			}
 		}
+		self.stored_value.set(Some(v));
 		v
 	}
 }

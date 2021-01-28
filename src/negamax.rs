@@ -12,13 +12,13 @@ pub fn negamax(
 ) -> (Value, Move) {
 	match b.player {
 		Color::Black => {
-			if let (v, Some(mv)) = negamax_search(&b, Value::MIN+1, Value::MAX-1, 0, -1, tx, opts) {
+			if let (v, Some(mv)) = negamax_search(b, Value::MIN+1, Value::MAX-1, 0, -1, tx, opts) {
 				return (-v, mv);
 			}
 		},
 		Color::White => {
-			if let (v, Some(mv)) = negamax_search(&b, Value::MIN+1, Value::MAX-1, 0, 1, tx, opts) {
-				return (-v, mv);
+			if let (v, Some(mv)) = negamax_search(b, Value::MIN+1, Value::MAX-1, 0, 1, tx, opts) {
+				return (v, mv);
 			}
 		}
 	}
@@ -30,12 +30,12 @@ fn negamax_search(
 	mut alpha: Value,
 	beta: Value,
 	depth: u8,
-	sign: i16,
+	sign: i8,
 	tx: &Option<tokio::sync::mpsc::Sender<SearchInfo>>,
 	opts: &Options,
 ) -> (Value, Option<Move>) {
 	if depth == opts.max_depth {
-		return (sign * b.value(), None);
+		return (sign as Value * b.value(), None);
 	}
 	
 	let moves = b.generate_all_legal_moves();
@@ -43,15 +43,16 @@ fn negamax_search(
 		.iter()
 		.map(|&x| (x, b.clone_apply_move(x.f_pos, x.t_pos)))
 		.collect();
-	move_ordering(&mut bs, opts);
+
+	move_ordering(&mut bs, sign, opts);
 
 	let mut best_score: Value = Value::MIN;
 	let mut best_move = None;
-	for (mv, child) in bs {
-		let score = -negamax_search(&child, -beta, -alpha, depth + 1, -sign, tx, opts).0;
+	for (mv, child) in bs.iter() {
+		let score = -negamax_search(child, -beta, -alpha, depth + 1, -sign, tx, opts).0;
 		if score > best_score {
 			if depth == 0 {
-				best_move = Some(mv);
+				best_move = Some(*mv);
 			}
 			best_score = score;
 		}
