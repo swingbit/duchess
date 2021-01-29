@@ -5,7 +5,7 @@ use crate::board::{Move};
 pub enum SearchAlgorithm {
 	Minimax,
 	Negamax,
-	Pvs,
+	Negascout,
 }
 impl FromStr for SearchAlgorithm {
 	type Err = ();
@@ -14,7 +14,7 @@ impl FromStr for SearchAlgorithm {
 		match input.to_lowercase().as_str() {
 			"minimax" => Ok(SearchAlgorithm::Minimax),
 			"negamax" => Ok(SearchAlgorithm::Negamax),
-			"pvs" => Ok(SearchAlgorithm::Pvs),
+			"negascout" => Ok(SearchAlgorithm::Negascout),
 			_ => Err(()),
 		}
 	}

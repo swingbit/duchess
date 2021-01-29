@@ -6,12 +6,14 @@ mod generation;
 mod minimax;
 mod misc;
 mod negamax;
+mod negascout;
 mod ordering;
 mod uci;
 
 use crate::board::{Board,Color,Move};
 use crate::minimax::minimax;
 use crate::negamax::negamax;
+use crate::negascout::negascout;
 use crate::evaluation::{Value};
 use crate::uci::{uci_manager};
 use crate::misc::*;
@@ -23,13 +25,14 @@ fn self_play_test(opts: &Options) {
 	let mut b: Board = Board::new(Color::White);
 	/* Just for testing: AI playing against itself in a loop */
 
-	for _ in 0..10 {
+	for _ in 0..30 {
 		let res:(Value,Move);
 
 		match opts.search_algo {
 			SearchAlgorithm::Minimax => res = minimax(&b, &None, opts),
 			SearchAlgorithm::Negamax => res = negamax(&b, &None, opts),
-			_ => panic!("Algorithm {:?} not supported", opts.search_algo)
+			SearchAlgorithm::Negascout => res = negascout(&b, &None, opts),
+			// _ => panic!("Algorithm {:?} not supported", opts.search_algo)
 		}
 		let score = res.0;
 		let mv = res.1;
@@ -59,8 +62,8 @@ async fn main() {
 				.short("a")
 				.long("algorithm")
 				.takes_value(true)
-				.possible_values(&["minimax", "negamax"])
-				.default_value("negamax")
+				.possible_values(&["minimax", "negamax", "negascout"])
+				.default_value("negascout")
 				.help("Search algorithm"),
 		)
 		.arg(
