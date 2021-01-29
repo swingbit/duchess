@@ -4,6 +4,7 @@ use crate::board::{Board,Pos,Move,Color};
 use crate::evaluation::{Value};
 use crate::minimax::{minimax};
 use crate::negamax::{negamax};
+use crate::negascout::negascout;
 use crate::misc::*;
 
 impl Pos {
@@ -94,7 +95,8 @@ pub async fn uci_manager(opts: &Options) {
 						match opts.search_algo {
 							SearchAlgorithm::Minimax => res = minimax(&b, &Some(sch_mgr_tx.clone()), opts),
 							SearchAlgorithm::Negamax => res = negamax(&b, &Some(sch_mgr_tx.clone()), opts),
-							_ => panic!("Algorithm {:?} not supported", opts.search_algo)
+							SearchAlgorithm::Negascout => res = negascout(&b, &Some(sch_mgr_tx.clone()), opts),
+							// _ => panic!("Algorithm {:?} not supported", opts.search_algo)
 						}
 						let _score = res.0;
 						let mv = res.1;

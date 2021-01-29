@@ -9,8 +9,8 @@ Because it's fun and because I needed an excuse to get accustomed to Rust.
 - Check validity of human moves:
   - (done) all standard moves
   - (missing) check, checkmate, castling, promotion, en passant
-- UI 
-  - (partial) make the engine [UCI](https://en.wikipedia.org/wiki/Universal_Chess_Interface)-compatible and use an available GUI
+- UI:
+  - (partial) [UCI](https://en.wikipedia.org/wiki/Universal_Chess_Interface) interface (use with e.g. [Arena Chess GUI](http://www.playwitharena.de/))
 - Evaluations and heuristics:
   - (done) simple board value based on pieces
   - (done) simplified positional evaluation
