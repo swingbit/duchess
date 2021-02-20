@@ -1,5 +1,5 @@
 [package]
-name = "chess"
+name = "duchess"
 version = "0.1.0"
 authors = ["Roberto Cornacchia <roberto@spinque.com>"]
 edition = "2018"
