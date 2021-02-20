@@ -1,4 +1,4 @@
-# chess
+# Duchess
 A simple chess engine. 
 Because it's fun and because I needed an excuse to get accustomed to Rust.
 
@@ -11,6 +11,7 @@ Because it's fun and because I needed an excuse to get accustomed to Rust.
   - (missing) check, checkmate, castling, promotion, en passant
 - UI:
   - (partial) [UCI](https://en.wikipedia.org/wiki/Universal_Chess_Interface) interface (use with e.g. [Arena Chess GUI](http://www.playwitharena.de/))
+  - (missing) [UCI](https://en.wikipedia.org/wiki/Universal_Chess_Interface) web interface (WebAssembly)
 - Evaluations and heuristics:
   - (done) simple board value based on pieces
   - (done) simplified positional evaluation
