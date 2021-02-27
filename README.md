@@ -4,11 +4,11 @@ Because it's fun and because I needed an excuse to get accustomed to Rust.
 
 ## Status
 - Move generation:
-  - (done) all standard moves
-  - (missing) check, checkmate, castling, promotion, en passant
+  - (done) all standard moves, castling
+  - (missing) check, checkmate, promotion, en passant
 - Check validity of human moves:
-  - (done) all standard moves
-  - (missing) check, checkmate, castling, promotion, en passant
+  - (done) all standard moves, castling
+  - (missing) check, checkmate, promotion, en passant
 - UI:
   - (partial) [UCI](https://en.wikipedia.org/wiki/Universal_Chess_Interface) interface (use with e.g. [Arena Chess GUI](http://www.playwitharena.de/))
   - (missing) [UCI](https://en.wikipedia.org/wiki/Universal_Chess_Interface) web interface (WebAssembly)

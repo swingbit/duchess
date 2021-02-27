@@ -152,6 +152,8 @@ pub struct Board {
 	pub tiles: [[Option<Tile>; 8]; 8],
 	pub player: Color,
 	pub king_pos: [Pos; 2],
+	pub can_castle_left: [bool; 2],
+	pub can_castle_right: [bool; 2],
 	pub stored_value: Cell<Option<Value>>,
 }
 
@@ -161,6 +163,8 @@ impl Board {
 			tiles: [[None; 8]; 8],
 			player,
 			king_pos: [Pos::at(4,7).unwrap(), Pos::at(4,0).unwrap()],
+			can_castle_left: [true; 2],
+			can_castle_right: [true; 2],
 			stored_value: Cell::default(),
 		};
 
@@ -192,14 +196,36 @@ impl Board {
 		&self.tiles[pos.row as usize][pos.col as usize]
 	}
 
-	pub fn clone_apply_move(&self, f_pos: Pos, t_pos: Pos) -> Board {
+	pub fn clone_apply_move(&self, mv: Move) -> Board {
 		let mut b = self.clone();
-		b.tiles[t_pos.row as usize][t_pos.col as usize] = self.tiles[f_pos.row as usize][f_pos.col as usize];
-		b.tiles[f_pos.row as usize][f_pos.col as usize] = None;
+		b.tiles[mv.t_pos.row as usize][mv.t_pos.col as usize] = self.tiles[mv.f_pos.row as usize][mv.f_pos.col as usize];
+		b.tiles[mv.f_pos.row as usize][mv.f_pos.col as usize] = None;
 		b.player = b.player.swap();
-		let t = b.at(t_pos).unwrap();
+		let t = b.at(mv.t_pos).unwrap();
 		if t.piece == Piece::King {
-			b.king_pos[t.color as usize] = t_pos;
+			b.king_pos[t.color as usize] = mv.t_pos;
+			b.can_castle_left[t.color as usize] = false;
+			b.can_castle_right[t.color as usize] = false;
+		}
+		if t.piece == Piece::Rook {
+			match t.color {
+				Color::Black => {
+					if mv.f_pos == Pos::at(7,7).unwrap() {
+						b.can_castle_left[t.color as usize] = false;
+					}
+					if mv.f_pos == Pos::at(0,7).unwrap() {
+						b.can_castle_right[t.color as usize] = false;
+					}
+				},
+				Color::White => {
+					if mv.f_pos == Pos::at(0,0).unwrap() {
+						b.can_castle_left[t.color as usize] = false;
+					}
+					if mv.f_pos == Pos::at(7,0).unwrap() {
+						b.can_castle_right[t.color as usize] = false;
+					}
+				}
+			}
 		}
 		b.stored_value = Cell::default();
 		b

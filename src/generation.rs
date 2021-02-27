@@ -166,6 +166,33 @@ impl Board {
 				},
 
 				Piece::King => {
+					if (f_pos.col - t_pos.col).abs() == 2 {
+						/* castling (TODO: cannot be used in currently in check) */
+						match self.player {
+							Color::Black => {
+								if !self.can_castle_left[self.player as usize] && t_pos.col == 6 {
+									return MoveType::Illegal;
+								}
+								if !self.can_castle_right[self.player as usize] && t_pos.col == 2 {
+									return MoveType::Illegal;
+								}
+							},
+							Color::White => {
+								if !self.can_castle_left[self.player as usize] && t_pos.col == 2 {
+									return MoveType::Illegal;
+								}
+								if !self.can_castle_right[self.player as usize] && t_pos.col == 6 {
+									return MoveType::Illegal;
+								}
+							}
+						}
+						if self.at(Pos::at(t_pos.col,f_pos.row).unwrap()).is_none() &&
+							 self.at(Pos::at((f_pos.col + t_pos.col)/2,f_pos.row).unwrap()).is_none() {
+							return MoveType::Move;
+						}
+						return MoveType::Illegal;
+					}
+
 					let cb = check_bishop(self,f_pos,t_pos,max_obstacles);
 					if cb != MoveType::Illegal {
 						return cb;
@@ -309,6 +336,19 @@ impl Board {
 				Piece::King => {
 					generate_bishop(&mut moves,self,f_pos,1);
 					generate_rook(&mut moves,self,f_pos,1);
+					/* castling (TODO: cannot be used in currently in check) */
+					if self.can_castle_left[self.player as usize] {
+						if self.at(Pos::at(f_pos.col-1,f_pos.row).unwrap()).is_none() &&
+						   self.at(Pos::at(f_pos.col-2,f_pos.row).unwrap()).is_none() {
+								moves.push(Pos::at(f_pos.col-2,f_pos.row).unwrap());
+						}
+					}
+					if self.can_castle_right[self.player as usize] {
+						if self.at(Pos::at(f_pos.col+1,f_pos.row).unwrap()).is_none() &&
+						   self.at(Pos::at(f_pos.col+2,f_pos.row).unwrap()).is_none() {
+								moves.push(Pos::at(f_pos.col+2,f_pos.row).unwrap());
+						}
+					}
 				}
 			}
 		}

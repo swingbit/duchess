@@ -37,7 +37,7 @@ fn self_play_test(opts: &Options) {
 		let score = res.0;
 		let mv = res.1;
 		println!("{:?}: [{}{}]({})", b.player, mv.f_pos, mv.t_pos, score);
-		b = b.clone_apply_move(mv.f_pos, mv.t_pos);
+		b = b.clone_apply_move(mv);
 	}
 }
 

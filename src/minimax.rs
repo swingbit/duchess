@@ -36,7 +36,7 @@ fn maximize(
 	let moves = b.generate_all_legal_moves();
 	let mut bs: Vec<(Move, Board)> = moves
 		.iter()
-		.map(|&x| (x, b.clone_apply_move(x.f_pos, x.t_pos)))
+		.map(|&x| (x, b.clone_apply_move(x)))
 		.collect();
 	move_ordering(&mut bs, 1, opts);
 
@@ -75,7 +75,7 @@ fn minimize(
 	let moves = b.generate_all_legal_moves();
 	let mut bs: Vec<(Move, Board)> = moves
 		.iter()
-		.map(|&x| (x, b.clone_apply_move(x.f_pos, x.t_pos)))
+		.map(|&x| (x, b.clone_apply_move(x)))
 		.collect();
 
 	move_ordering(&mut bs, 1, opts);
