@@ -1,4 +1,3 @@
-use std::error::Error;
 use std::fmt;
 use std::str::FromStr;
 use std::cell::Cell;
@@ -6,16 +5,10 @@ use std::cell::Cell;
 use crate::evaluation::{Value};
 
 #[derive(Clone, Debug)]
-pub struct ParsePosError;
-impl fmt::Display for ParsePosError {
+pub struct ParseError;
+impl fmt::Display for ParseError {
 	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
 		"invalid position".fmt(f)
-	}
-}
-
-impl Error for ParsePosError {
-	fn description(&self) -> &str {
-		"invalid position"
 	}
 }
 
@@ -44,6 +37,31 @@ pub enum Piece {
 	King = 5,
 }
 
+impl Piece {
+	pub fn as_char(self) -> Option<char> {
+		match self {
+				Piece::Pawn => None,
+				Piece::Knight => Some('n'),
+				Piece::Bishop => Some('b'),
+				Piece::Rook => Some('r'),
+				Piece::Queen => Some('q'),
+				Piece::King => Some('k')
+		}
+	}
+
+	pub fn from_char(c: char) -> Result<Piece, ParseError> {
+		match c.to_lowercase().next() {
+			Some('p') => Ok(Piece::Pawn),
+			Some('n') => Ok(Piece::Knight),
+			Some('b') => Ok(Piece::Bishop),
+			Some('r') => Ok(Piece::Rook),
+			Some('k') => Ok(Piece::King),
+			Some('q') => Ok(Piece::Queen),
+			_ => Err(ParseError)
+		}
+	}
+}
+
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub struct Tile {
 	pub piece: Piece,
@@ -62,6 +80,7 @@ pub struct Pos {
 pub struct Move {
 	pub f_pos: Pos,
 	pub t_pos: Pos,
+	pub promotion: Option<Piece>
 }
 
 impl fmt::Display for Pos {
@@ -72,30 +91,41 @@ impl fmt::Display for Pos {
 }
 
 impl FromStr for Pos {
-	type Err = ParsePosError;
+	type Err = ParseError;
 
 	fn from_str(s: &str) -> Result<Self, Self::Err> {
 		if let Some(pos) = Self::from_coord(s) {
 			Ok(pos)
 		} else {
-			Err(ParsePosError)
+			Err(ParseError)
 		}
 	}
 }
 
 impl fmt::Display for Move {
 	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-		write!(f, "{}{}", self.f_pos, self.t_pos)
+		let mut s = write!(f, "{}{}", self.f_pos, self.t_pos);
+		if let Some(p) = self.promotion {
+			if let Some(c) = p.as_char() {
+					s = write!(f, "{}", c);
+			}
+		}
+		s
 	}
 }
 
 impl FromStr for Move {
-	type Err = ParsePosError;
+	type Err = ParseError;
 
 	fn from_str(s: &str) -> Result<Self, Self::Err> {
 		let f_pos = s[0..2].parse::<Pos>()?;
 		let t_pos = s[2..4].parse::<Pos>()?;
-		Ok(Move {f_pos, t_pos})
+		if s.len() == 5 {
+			let promotion = Piece::from_char(s.chars().nth(4).unwrap())?;
+			return Ok(Move {f_pos, t_pos,promotion:Some(promotion)});
+		} else {
+			return Ok(Move {f_pos, t_pos,promotion:None});
+		}
 	}
 }
 
@@ -234,12 +264,27 @@ impl Board {
 
 #[cfg(test)]
 mod tests {
-	use crate::board::Pos;
+	use crate::board::{Pos,Move};
 	#[test]
 	pub fn test_parse_pos() {
 		let coords_in = "G8";
 		let pos = coords_in.parse::<Pos>().expect("legal");
 		let coords_out = pos.to_string();
 		assert_eq!(coords_in.to_ascii_lowercase(), coords_out);
+	}
+
+	#[test]
+	pub fn test_parse_move() {
+		let mv_in = "e7e8";
+		let mv = mv_in.parse::<Move>().expect("legal");
+		let mv_out = mv.to_string();
+		assert_eq!(mv_in.to_ascii_lowercase(), mv_out);
+	}
+	#[test]
+	pub fn test_parse_move_promotion() {
+		let mv_in = "e7e8q";
+		let mv = mv_in.parse::<Move>().expect("legal");
+		let mv_out = mv.to_string();
+		assert_eq!(mv_in.to_ascii_lowercase(), mv_out);
 	}
 }

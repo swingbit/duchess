@@ -214,7 +214,16 @@ impl Board {
 					if f_tile.color == self.player {
 						let moves = self.generate_legal_moves(f_pos);
 						for t_pos in moves {
-							all_moves.push(Move{f_pos,t_pos});
+							let promotion;
+							if f_tile.piece == Piece::Pawn 
+							 && ((f_tile.color == Color::Black && f_pos.row == 0)
+							  || (f_tile.color == Color::White && f_pos.row == 7)) {
+										/* simplification: assume we always promote to a Queen */
+								promotion = Some(Piece::Queen);
+							} else {
+								promotion = None;
+							}
+							all_moves.push(Move{f_pos,t_pos, promotion});
 						}
 					}
 				}

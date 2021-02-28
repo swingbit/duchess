@@ -79,3 +79,12 @@ pub struct SearchInfo {
 	pub depth: u8,
 	pub best_move: Move,
 }
+
+#[allow(dead_code,non_snake_case)]
+pub fn lift_Option<A, B>(f: impl Fn(A)->B) -> impl Fn(Option<A>)->Option<B> {
+	move |a| Some(f(a?))
+}
+#[allow(dead_code,non_snake_case)]
+pub fn lift2Option<A, B, C>(f: impl Fn(A, B)->C) -> impl Fn(Option<A>, Option<B>)->Option<C> {
+	move |a, b| Some(f(a?, b?))
+}

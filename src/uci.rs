@@ -1,6 +1,6 @@
 
-use vampirc_uci::{UciMessage,UciSquare,UciMove,parse_one};
-use crate::board::{Board,Pos,Move,Color};
+use vampirc_uci::{UciMessage,UciSquare,UciPiece,UciMove,parse_one};
+use crate::board::{Board,Pos,Piece,Move,Color};
 use crate::evaluation::{Value};
 use crate::minimax::{minimax};
 use crate::negamax::{negamax};
@@ -23,11 +23,25 @@ impl Pos {
 	}
 }
 
+impl Piece {
+	pub fn from_uci(um: UciPiece) -> Piece {
+		match um {
+			UciPiece::Pawn => Piece::Pawn,
+			UciPiece::Knight => Piece::Knight,
+			UciPiece::Bishop => Piece::Bishop,
+			UciPiece::Rook => Piece::Rook,
+			UciPiece::Queen => Piece::Queen,
+			UciPiece::King => Piece::King,
+		}
+	}
+}
+
 impl Move {
 	pub fn from_uci(um: UciMove) -> Move {
 		Move {
 			f_pos: Pos::from_uci(um.from), 
 			t_pos: Pos::from_uci(um.to),
+			promotion: lift_Option(Piece::from_uci)(um.promotion),
 		}
 	}
 
