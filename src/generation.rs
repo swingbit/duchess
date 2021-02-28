@@ -7,7 +7,7 @@ impl Board {
 		if let Some(f_tile) = self.at(f_pos) {
 			if let Some(t_tile) = self.at(t_pos) {
 				if f_tile.color != t_tile.color {
-					return MoveType::Capture;
+					return MoveType::Capture(t_tile.piece);
 				}
 			} else {
 				return MoveType::Move;
@@ -30,7 +30,7 @@ impl Board {
 				if let Some(x_pos) = Pos::at(f_c(f_pos.col,i), f_r(f_pos.row,i)) {
 					let move_type = b.move_type(f_pos,x_pos);
 					match &move_type {
-						MoveType::Illegal | MoveType::Capture => {
+						MoveType::Illegal | MoveType::Capture(_) => {
 							if obstacles == max_obstacles {
 								if t_pos == x_pos {
 									return move_type;
@@ -121,7 +121,7 @@ impl Board {
 						if (t_pos.col -f_pos.col).abs() == 1 &&
 								t_pos.row == f_incr(f_pos.row,1) &&
 								t_tile.color != f_tile.color {
-							return MoveType::Capture;
+							return MoveType::Capture(t_tile.piece);
 						}
 					} else {
 						/* forward by 1 or 2 */
@@ -141,7 +141,7 @@ impl Board {
 						 ((f_pos.row-t_pos.row).abs() == 2 && (f_pos.col-t_pos.col).abs() == 1) {
 						if let Some(t_tile)	= self.at(t_pos) {
 							if t_tile.color != f_tile.color {
-								return MoveType::Capture;
+								return MoveType::Capture(t_tile.piece);
 							}
 						} else {
 							return MoveType::Move;
@@ -241,7 +241,7 @@ impl Board {
 				if let Some(t_pos) = Pos::at(f_c(f_pos.col,i), f_r(f_pos.row,i)) {
 					match b.move_type(f_pos,t_pos) {
 						MoveType::Move => moves.push(t_pos),
-						MoveType::Capture => { moves.push(t_pos); break; },
+						MoveType::Capture(_) => { moves.push(t_pos); break; },
 						MoveType::Illegal => break
 					}
 				} else { break; }
@@ -310,7 +310,7 @@ impl Board {
 					/* Capture diagonally */
 					for i in [-1, 1].iter() {
 						if let Some(t_pos) = Pos::at(f_pos.col+i, f_incr(f_pos.row,1)) {
-							if self.move_type(f_pos,t_pos) == MoveType::Capture {
+							if let MoveType::Capture(_) = self.move_type(f_pos,t_pos) {
 								moves.push(t_pos);
 							}
 						}

@@ -173,7 +173,7 @@ impl Pos {
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub enum MoveType {
 	Illegal,
-	Capture,
+	Capture(Piece),
 	Move,
 }
 
