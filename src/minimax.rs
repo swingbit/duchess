@@ -33,12 +33,7 @@ fn maximize(
 		return (b.value(), None);
 	}
 
-	let moves = b.generate_all_legal_moves();
-	let mut bs: Vec<(Move, Board)> = moves
-		.iter()
-		.map(|&x| (x, b.clone_apply_move(x)))
-		.collect();
-	move_ordering(&mut bs, 1, opts);
+	let mut bs: Vec<(Move, Board)> = b.generate_all_legal_moves();
 
 	let mut best_score: Value = Value::MIN;
 	let mut best_move = None;
@@ -72,11 +67,7 @@ fn minimize(
 		return (b.value(), None);
 	}
 
-	let moves = b.generate_all_legal_moves();
-	let mut bs: Vec<(Move, Board)> = moves
-		.iter()
-		.map(|&x| (x, b.clone_apply_move(x)))
-		.collect();
+	let mut bs: Vec<(Move, Board)> = b.generate_all_legal_moves();
 
 	move_ordering(&mut bs, 1, opts);
 

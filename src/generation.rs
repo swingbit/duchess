@@ -357,22 +357,24 @@ impl Board {
 		self.generate_bishop(moves,f_pos,1);
 		self.generate_rook(moves,f_pos,1);
 
-		/* castling (TODO: cannot be used in currently in check) */
+		/* castling */
 		if self.can_castle_left[self.player as usize] {
 			if self.at(Pos::at(f_pos.col-1,f_pos.row).unwrap()).is_none() &&
-				self.at(Pos::at(f_pos.col-2,f_pos.row).unwrap()).is_none() {
+				self.at(Pos::at(f_pos.col-2,f_pos.row).unwrap()).is_none() &&
+				!self.is_check_for_color(self.player) {
 					moves.push(Pos::at(f_pos.col-2,f_pos.row).unwrap());
 			}
 		}
 		if self.can_castle_right[self.player as usize] {
 			if self.at(Pos::at(f_pos.col+1,f_pos.row).unwrap()).is_none() &&
-				self.at(Pos::at(f_pos.col+2,f_pos.row).unwrap()).is_none() {
+				self.at(Pos::at(f_pos.col+2,f_pos.row).unwrap()).is_none() &&
+				!self.is_check_for_color(self.player)  {
 					moves.push(Pos::at(f_pos.col+2,f_pos.row).unwrap());
 			}
 		}
 	}
 
-	pub fn generate_all_legal_moves(&self) -> Vec<Move> {
+	pub fn generate_all_legal_moves(&self) -> Vec<(Move,Board)> {
 		let mut all_moves = Vec::new();
 		for c in 0..8 {
 			for r in 0..8 {
@@ -390,7 +392,12 @@ impl Board {
 							} else {
 								promotion = None;
 							}
-							all_moves.push(Move{f_pos,t_pos, promotion});
+
+							let mv = Move{f_pos,t_pos, promotion};
+							let b = self.clone_apply_move(mv);
+							if !b.is_check_for_color(self.player) {
+								all_moves.push((mv,b));
+							}
 						}
 					}
 				}

@@ -38,11 +38,8 @@ fn negascout_search(
 	if depth == opts.max_depth {
 		return (sign as Value * b.value(), None);
 	}
-	let moves = b.generate_all_legal_moves();
-	let mut bs: Vec<(Move, Board)> = moves
-		.iter()
-		.map(|&x| (x, b.clone_apply_move(x)))
-		.collect();
+	
+	let mut bs: Vec<(Move, Board)> = b.generate_all_legal_moves();
 
 	move_ordering(&mut bs, sign, opts);
 

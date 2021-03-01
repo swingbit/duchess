@@ -4,8 +4,8 @@ Because it's fun and because I needed an excuse to get accustomed to Rust.
 
 ## Status
 - Move generation:
-  - (done) all standard moves, castling, promotion
-  - (missing) check, checkmate, en passant
+  - (done) all standard moves, castling, promotion, check
+  - (missing) checkmate, en passant
 - Check validity of human moves:
   - (done) all standard moves, castling, promotion
   - (missing) check, checkmate, en passant
