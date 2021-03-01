@@ -35,6 +35,8 @@ fn maximize(
 
 	let mut bs: Vec<(Move, Board)> = b.generate_all_legal_moves();
 
+	move_ordering(&mut bs, 1, opts);
+
 	let mut best_score: Value = Value::MIN;
 	let mut best_move = None;
 	for (mv, child) in bs.iter() {
