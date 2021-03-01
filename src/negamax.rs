@@ -12,12 +12,12 @@ pub fn negamax(
 ) -> (Value, Move) {
 	match b.player {
 		Color::Black => {
-			if let (v, Some(mv)) = negamax_search(b, Value::MIN+1, Value::MAX-1, 0, -1, tx, opts) {
+			if let (v, Some(mv)) = negamax_search(b, Value::MIN + 1, Value::MAX - 1, 0, -1, tx, opts) {
 				return (-v, mv);
 			}
 		},
 		Color::White => {
-			if let (v, Some(mv)) = negamax_search(b, Value::MIN+1, Value::MAX-1, 0, 1, tx, opts) {
+			if let (v, Some(mv)) = negamax_search(b, Value::MIN + 1, Value::MAX - 1, 0, 1, tx, opts) {
 				return (v, mv);
 			}
 		}
@@ -42,7 +42,7 @@ fn negamax_search(
 
 	move_ordering(&mut bs, sign, opts);
 
-	let mut best_score: Value = Value::MIN;
+	let mut best_score: Value = Value::MIN + 1;
 	let mut best_move = None;
 	for (mv, child) in bs.iter() {
 		let score = -negamax_search(child, -beta, -alpha, depth + 1, -sign, tx, opts).0;

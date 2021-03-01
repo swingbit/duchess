@@ -43,7 +43,7 @@ fn negascout_search(
 
 	move_ordering(&mut bs, sign, opts);
 
-	let mut lower: Value = Value::MIN;
+	let mut lower: Value = Value::MIN + 1;
 	let mut upper: Value = beta;
 	let mut best_move = None;
 	for (mv, child) in bs.iter() {
