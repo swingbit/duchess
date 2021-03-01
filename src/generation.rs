@@ -23,7 +23,7 @@ impl Board {
 			}
 		}
 
-		/* check all other attacks, by reversing an attack from the king */
+		/* check an attack by other pieces, by reversing an attack with their movement from the king's position */
 		let mut moves = Vec::new();
 		self.generate_bishop(&mut moves, king_pos, 7);
 		if moves.iter().any(|&p| { self.at(p).is_some() }) {
@@ -302,7 +302,7 @@ impl Board {
 		}
 	}
 
-		/// Generate possible straight and diagonal moves from a given point in any directions
+	/// Generate possible straight and diagonal moves from a given point in any directions
 	fn generate_arm(&self, moves: &mut Vec<Pos>, f_pos: Pos, max_len: i8, f_c:fn(i8,i8)->i8, f_r:fn(i8,i8)->i8) {
 		for i in 1..max_len+1 {
 			if let Some(t_pos) = Pos::at(f_c(f_pos.col,i), f_r(f_pos.row,i)) {
@@ -385,9 +385,9 @@ impl Board {
 						for t_pos in moves {
 							let promotion;
 							if f_tile.piece == Piece::Pawn 
-								&& ((f_tile.color == Color::Black && f_pos.row == 0)
-								|| (f_tile.color == Color::White && f_pos.row == 7)) {
-										/* simplification: assume we always promote to a Queen */
+									&& ((f_tile.color == Color::Black && t_pos.row == 0)
+									||  (f_tile.color == Color::White && t_pos.row == 7)) {
+								/* simplification: assume we always promote to a Queen */
 								promotion = Some(Piece::Queen);
 							} else {
 								promotion = None;
