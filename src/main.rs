@@ -46,7 +46,7 @@ fn self_play_test(opts: &Options) {
 async fn main() {
 	let mut opts = OPTS_DEFAULT.clone();
 
-	let matches = App::new("RustChess")
+	let matches = App::new("Duchess")
 		.version("0.1.0")
 		.author("Roberto Cornacchia <roberto.cornacchia@gmail.com>")
 		.about("A simple chess engine")
