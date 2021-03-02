@@ -25,7 +25,7 @@ fn self_play_test(opts: &Options) {
 	let mut b: Board = Board::new(Color::White);
 	/* Just for testing: AI playing against itself in a loop */
 
-	for _ in 0..30 {
+	for i in 0..100 {
 		let res:(Value,Move);
 
 		match opts.search_algo {
@@ -36,8 +36,8 @@ fn self_play_test(opts: &Options) {
 		}
 		let score = res.0;
 		let mv = res.1;
-		println!("{:?}: [{}{}]({})", b.player, mv.f_pos, mv.t_pos, score);
-		b = b.clone_apply_move(mv);
+		println!("{}. {:?}: [{}{}]({})", i, b.player, mv.f_pos, mv.t_pos, score);
+		b = b.clone_apply_move(&mv);
 	}
 }
 

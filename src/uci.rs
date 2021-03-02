@@ -94,7 +94,7 @@ pub async fn uci_manager(opts: &Options) {
 						b = Board::new(Color::White);
 						for mv in moves.iter() {
 							let lastmove = Move::from_uci(*mv);
-							b = b.clone_apply_move(lastmove);
+							b = b.clone_apply_move(&lastmove);
 						}
 					},
 					UciMessage::SetOption { name:_, value:_ } => {
@@ -118,7 +118,7 @@ pub async fn uci_manager(opts: &Options) {
 							best_move: mv.to_uci(),
 							ponder: None,
 						};
-						b = b.clone_apply_move(mv);
+						b = b.clone_apply_move(&mv);
 						println!("{}", bestmove);
 					},
 					_ => eprintln!(" Don't know what to do")

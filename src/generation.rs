@@ -4,8 +4,10 @@ use crate::board::{Board,Pos,Move,MoveType,Piece,Color};
 
 impl Board {
 
-	/// Check if the King of the given color is in check
-	pub fn is_check_for_color(&self, color: Color) -> bool {
+	/// Check if the King of the given color is in check,
+	/// by reversing an attack from the king's position
+	/// using all types of movement
+	pub fn is_king_in_check(&self, color: Color) -> bool {
 		let king_pos = self.king_pos[color as usize];
 		let f_incr:fn(i8,i8)->i8;
 
@@ -17,31 +19,31 @@ impl Board {
 		}
 		for i in [-1, 1].iter() {
 			if let Some(pos) = Pos::at(king_pos.col+i, f_incr(king_pos.row,1)) {
-				if let MoveType::Capture(_) = self.move_type(king_pos,pos) {
+				if let MoveType::Capture(Piece::Pawn) = self.move_type(king_pos,pos) {
 					return true;
 				}
 			}
 		}
 
-		/* check an attack by other pieces, by reversing an attack with their movement from the king's position */
+		/* check an attack by other pieces */
 		let mut moves = Vec::new();
 		self.generate_bishop(&mut moves, king_pos, 7);
 		if moves.iter().any(|&p| { self.at(p).is_some() }) {
 			return true
 		}
 
-		let mut moves = Vec::new();
-		self.generate_knight(&mut moves, king_pos);
-		if moves.iter().any(|&p| { self.at(p).is_some() }) {
-			return true
-		}
-	
-		let mut moves = Vec::new();
+		moves = Vec::new();
 		self.generate_rook(&mut moves, king_pos, 7);
 		if moves.iter().any(|&p| { self.at(p).is_some() }) {
 			return true
 		}
 
+		moves = Vec::new();
+		self.generate_knight(&mut moves, king_pos);
+		if moves.iter().any(|&p| { self.at(p).is_some() }) {
+			return true
+		}
+	
 		false
 	}
 
@@ -357,18 +359,18 @@ impl Board {
 		self.generate_bishop(moves,f_pos,1);
 		self.generate_rook(moves,f_pos,1);
 
-		/* castling */
+		// /* castling */
 		if self.can_castle_left[self.player as usize] {
 			if self.at(Pos::at(f_pos.col-1,f_pos.row).unwrap()).is_none() &&
 				self.at(Pos::at(f_pos.col-2,f_pos.row).unwrap()).is_none() &&
-				!self.is_check_for_color(self.player) {
+				!self.is_king_in_check(self.player) {
 					moves.push(Pos::at(f_pos.col-2,f_pos.row).unwrap());
 			}
 		}
 		if self.can_castle_right[self.player as usize] {
 			if self.at(Pos::at(f_pos.col+1,f_pos.row).unwrap()).is_none() &&
 				self.at(Pos::at(f_pos.col+2,f_pos.row).unwrap()).is_none() &&
-				!self.is_check_for_color(self.player)  {
+				!self.is_king_in_check(self.player)  {
 					moves.push(Pos::at(f_pos.col+2,f_pos.row).unwrap());
 			}
 		}
@@ -394,8 +396,8 @@ impl Board {
 							}
 
 							let mv = Move{f_pos,t_pos, promotion};
-							let b = self.clone_apply_move(mv);
-							if !b.is_check_for_color(self.player) {
+							let b = self.clone_apply_move(&mv);
+							if !b.is_king_in_check(self.player) {
 								all_moves.push((mv,b));
 							}
 						}

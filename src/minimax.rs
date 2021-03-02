@@ -37,7 +37,7 @@ fn maximize(
 
 	move_ordering(&mut bs, 1, opts);
 
-	let mut best_score: Value = Value::MIN;
+	let mut best_score: Value = Value::MIN + 1;
 	let mut best_move = None;
 	for (mv, child) in bs.iter() {
 		let score = minimize(child, alpha, beta, depth + 1, tx, opts).0;
@@ -73,7 +73,7 @@ fn minimize(
 
 	move_ordering(&mut bs, 1, opts);
 
-	let mut best_score: Value = Value::MAX;
+	let mut best_score: Value = Value::MAX - 1;
 	let mut best_move = None;
 	for (mv, child) in bs.iter() {
 		let score = maximize(child, alpha, beta, depth + 1, tx, opts).0;

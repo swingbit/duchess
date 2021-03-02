@@ -39,7 +39,7 @@ fn negamax_search(
 	}
 	
 	let mut bs: Vec<(Move, Board)> = b.generate_all_legal_moves();
-
+	
 	move_ordering(&mut bs, sign, opts);
 
 	let mut best_score: Value = Value::MIN + 1;
