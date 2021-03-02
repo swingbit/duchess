@@ -33,7 +33,7 @@ fn maximize(
 		return (b.value(), None);
 	}
 
-	let mut bs: Vec<(Move, Board)> = b.generate_all_legal_moves();
+	let mut bs: Vec<(Move, Board)> = b.generate_all();
 
 	move_ordering(&mut bs, 1, opts);
 
@@ -69,7 +69,7 @@ fn minimize(
 		return (b.value(), None);
 	}
 
-	let mut bs: Vec<(Move, Board)> = b.generate_all_legal_moves();
+	let mut bs: Vec<(Move, Board)> = b.generate_all();
 
 	move_ordering(&mut bs, 1, opts);
 

@@ -38,7 +38,7 @@ fn negamax_search(
 		return (sign as Value * b.value(), None);
 	}
 	
-	let mut bs: Vec<(Move, Board)> = b.generate_all_legal_moves();
+	let mut bs: Vec<(Move, Board)> = b.generate_all();
 	
 	move_ordering(&mut bs, sign, opts);
 

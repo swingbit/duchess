@@ -3,14 +3,14 @@ use std::ops;
 use crate::board::{Board,Pos,Move,MoveType,Piece,Color};
 
 impl Board {
-	pub fn generate_all_legal_moves(&self) -> Vec<(Move,Board)> {
+	pub fn generate_all(&self) -> Vec<(Move,Board)> {
 		let mut all_moves = Vec::new();
 		for c in 0..8 {
 			for r in 0..8 {
 				let f_pos = Pos::at(c,r).unwrap();
 				if let Some(f_tile) = self.at(f_pos) {
 					if f_tile.color == self.player {
-						let moves = self.generate_legal_moves(f_pos);
+						let moves = self.generate(f_pos);
 						for t_pos in moves {
 							let promotion;
 							if f_tile.piece == Piece::Pawn 
@@ -35,7 +35,7 @@ impl Board {
 		all_moves
 	}
 
-	pub fn generate_legal_moves(&self, f_pos: Pos) -> Vec<Pos> {
+	pub fn generate(&self, f_pos: Pos) -> Vec<Pos> {
 		let mut moves = Vec::new();
 		
 		if let Some(f_tile) = self.at(f_pos) {
