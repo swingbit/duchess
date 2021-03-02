@@ -2,6 +2,7 @@ use clap::{App, Arg};
 
 mod board;
 mod evaluation;
+mod inspection;
 mod generation;
 mod minimax;
 mod misc;

@@ -199,7 +199,7 @@ impl Board {
 			can_castle_right: [true; 2],
 			stored_value: Cell::default(),
 		};
-
+		
 		b.tiles[0][0] = Some(Tile {piece: Piece::Rook, color: Color::White});
 		b.tiles[0][1] = Some(Tile {piece: Piece::Knight, color: Color::White});
 		b.tiles[0][2] = Some(Tile {piece: Piece::Bishop, color: Color::White});
@@ -231,42 +231,29 @@ impl Board {
 	/// Clone current board and apply given move.
 	/// The move is assumed to be valid
 	pub fn clone_apply_move(&self, mv: &Move) -> Board {
-		/* sanity checks */
-		assert_ne!(*self.at(mv.f_pos),None);
-		assert_eq!(*self.at(self.king_pos[0]),Some(Tile{piece: Piece::King, color:Color::Black}));
-		assert_eq!(*self.at(self.king_pos[1]),Some(Tile{piece: Piece::King, color:Color::White}));
-
 		let mut b = self.clone();
 		b.player = b.player.swap();
 		b.tiles[mv.t_pos.row as usize][mv.t_pos.col as usize] = b.tiles[mv.f_pos.row as usize][mv.f_pos.col as usize];
 		b.tiles[mv.f_pos.row as usize][mv.f_pos.col as usize] = None;
 		let t = b.at(mv.t_pos).unwrap();
-		
+
 		/* Castling: move Rook as well */
 		if t.piece == Piece::King && (mv.f_pos.col - mv.t_pos.col).abs() == 2 {
 			match t.color {
 				Color::Black => {
-					assert_eq!(mv.f_pos.row, 7);
-					assert_eq!(mv.t_pos.row, 7);
 					if mv.t_pos == Pos::at(6,7).unwrap() {
-						assert_eq!(b.tiles[7][7],Some(Tile{piece: Piece::Rook, color:t.color}));
 						b.tiles[7][5] = b.tiles[7][7];
 						b.tiles[7][7] = None;
 					} else if mv.t_pos == Pos::at(2,7).unwrap() {
-						assert_eq!(b.tiles[7][0], Some(Tile{piece: Piece::Rook, color:t.color}));
 						b.tiles[7][3] = b.tiles[7][0];
 						b.tiles[7][0] = None;
 					}
 				},
 				Color::White => {
-					assert_eq!(mv.f_pos.row, 0);
-					assert_eq!(mv.t_pos.row, 0);
 					if mv.t_pos == Pos::at(6,0).unwrap() {
-						assert_eq!(b.tiles[0][7], Some(Tile{piece: Piece::Rook, color:t.color}));
 						b.tiles[0][5] = b.tiles[0][7];
 						b.tiles[0][7] = None;
 					} else if mv.t_pos == Pos::at(2,0).unwrap() {
-						assert_eq!(b.tiles[0][0], Some(Tile{piece: Piece::Rook, color:t.color}));
 						b.tiles[0][3] = b.tiles[0][0];
 						b.tiles[0][0] = None;
 					}
@@ -304,7 +291,45 @@ impl Board {
 			}
 		}
 		b.stored_value = Cell::default();
+
 		b
+	}
+	
+	#[allow(dead_code)]
+	pub fn as_ascii(&self) -> String {
+		let mut s = String::new();
+		s.push_str("+---------------+\n");
+		for r in (0..8).rev() {
+			for c in 0..8 {
+				let pos = Pos::at(c,r).unwrap();
+				let mut p = ' ';
+				if let Some(tile) = self.at(pos) {
+					p = match tile.piece {
+						Piece::Pawn => 'p',
+						Piece::Knight => 'n',
+						Piece::Bishop => 'b',
+						Piece::Rook => 'r',
+						Piece::Queen => 'q',
+						Piece::King => 'k',
+					};
+					
+					if tile.color == Color::White {
+						p = p.to_ascii_uppercase();
+					}
+				}
+				s.push_str(&format!("|{}",p));
+			}
+			s.push_str("|\n");
+			s.push_str("+---------------+\n");
+		}
+		s.push_str("\n");
+		s.push_str(&format!("value: {:?}\n",self.stored_value));
+		s.push_str(&format!("player: {:?}\n",self.player));
+		s.push_str(&format!("king_pos: {:?}\n",self.king_pos));
+		s.push_str(&format!("can_castle_left: {:?}\n",self.can_castle_left));
+		s.push_str(&format!("can_castle_right: {:?}\n",self.can_castle_right));
+		s.push_str(&format!("check: {}\n",self.is_king_in_check(self.player)));
+		s
 	}
 }
 
