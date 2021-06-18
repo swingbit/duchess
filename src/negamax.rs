@@ -1,23 +1,24 @@
 use std::cmp;
+use async_recursion::async_recursion;
 
 use crate::board::{Board, Color, Move};
 use crate::evaluation::{Valuable, Value};
 use crate::misc::*;
 use crate::ordering::move_ordering;
 
-pub fn negamax(
-	b: &Board,
+pub async fn negamax(
+	b: &mut Board,
 	tx: &Option<tokio::sync::mpsc::Sender<SearchInfo>>,
 	opts: &Options,
 ) -> (Value, Move) {
 	match b.player {
 		Color::Black => {
-			if let (v, Some(mv)) = negamax_search(b, Value::MIN + 1, Value::MAX - 1, 0, -1, tx, opts) {
+			if let (v, Some(mv)) = negamax_search(b, Value::MIN + 1, Value::MAX - 1, 0, -1, tx, opts).await {
 				return (-v, mv);
 			}
 		},
 		Color::White => {
-			if let (v, Some(mv)) = negamax_search(b, Value::MIN + 1, Value::MAX - 1, 0, 1, tx, opts) {
+			if let (v, Some(mv)) = negamax_search(b, Value::MIN + 1, Value::MAX - 1, 0, 1, tx, opts).await {
 				return (v, mv);
 			}
 		}
@@ -25,8 +26,9 @@ pub fn negamax(
 	panic!("Couldn't find any move");
 }
 
-fn negamax_search(
-	b: &Board,
+#[async_recursion]
+async fn negamax_search(
+	b: &mut Board,
 	mut alpha: Value,
 	beta: Value,
 	depth: u8,
@@ -44,13 +46,16 @@ fn negamax_search(
 
 	let mut best_score: Value = Value::MIN + 1;
 	let mut best_move = None;
-	for (mv, child) in bs.iter() {
-		let score = -negamax_search(child, -beta, -alpha, depth + 1, -sign, tx, opts).0;
+	for (mv, child) in bs.iter_mut() {
+		let score = -negamax_search(child, -beta, -alpha, depth + 1, -sign, tx, opts).await.0;
 		if score > best_score {
 			if depth == 0 {
 				best_move = Some(*mv);
 			}
 			best_score = score;
+			if tx.as_ref().unwrap().send(SearchInfo{depth, best_move: *mv}).await.is_err() {
+				panic!("Sending error");
+			};
 		}
 		if opts.alpha_beta {
 			alpha = cmp::max(alpha, best_score);

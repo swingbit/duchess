@@ -11,5 +11,6 @@ edition = "2018"
 # strum_macros = ""
 clap = ""
 rand = ""
-vampirc-uci = "0.11"
+vampirc-uci = ""
 tokio = { version = "1", features = ["full"] }
+async-recursion = ""

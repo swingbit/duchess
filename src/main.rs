@@ -22,7 +22,7 @@ use crate::misc::*;
 
 extern crate vampirc_uci;
 
-fn self_play_test(opts: &Options) {
+async fn self_play_test(opts: &Options) {
 	let mut b: Board = Board::new(Color::White);
 	/* Just for testing: AI playing against itself in a loop */
 
@@ -30,9 +30,9 @@ fn self_play_test(opts: &Options) {
 		let res:(Value,Move);
 
 		match opts.search_algo {
-			SearchAlgorithm::Minimax => res = minimax(&b, &None, opts),
-			SearchAlgorithm::Negamax => res = negamax(&b, &None, opts),
-			SearchAlgorithm::Negascout => res = negascout(&b, &None, opts),
+			SearchAlgorithm::Minimax => res = minimax(&mut b, &None, opts).await,
+			SearchAlgorithm::Negamax => res = negamax(&mut b, &None, opts).await,
+			SearchAlgorithm::Negascout => res = negascout(&mut b, &None, opts).await,
 			// _ => panic!("Algorithm {:?} not supported", opts.search_algo)
 		}
 		let score = res.0;
@@ -115,7 +115,7 @@ async fn main() {
 		// println!("Options:\n {:#?}",opts);
 		match opts.ui {
 			Ui::Uci => uci_manager(&opts.clone()).await,
-			Ui::AnsiTerm => self_play_test(&opts.clone()),
+			Ui::AnsiTerm => self_play_test(&opts.clone()).await,
 		}
 
 }

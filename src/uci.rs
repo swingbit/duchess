@@ -1,7 +1,6 @@
 
 use vampirc_uci::{UciMessage,UciSquare,UciPiece,UciMove,parse_one};
 use crate::board::{Board,Pos,Piece,Move,Color};
-use crate::evaluation::{Value};
 use crate::minimax::{minimax};
 use crate::negamax::{negamax};
 use crate::negascout::negascout;
@@ -104,14 +103,17 @@ pub async fn uci_manager(opts: &Options) {
 						b = Board::new(Color::White);
 					},
 					UciMessage::Go { time_control:_, search_control:_} => {
-						// TODO: spawn this
-						let res:(Value,Move);
-						match opts.search_algo {
-							SearchAlgorithm::Minimax => res = minimax(&b, &Some(sch_mgr_tx.clone()), opts),
-							SearchAlgorithm::Negamax => res = negamax(&b, &Some(sch_mgr_tx.clone()), opts),
-							SearchAlgorithm::Negascout => res = negascout(&b, &Some(sch_mgr_tx.clone()), opts),
-							// _ => panic!("Algorithm {:?} not supported", opts.search_algo)
-						}
+						let o = opts.clone();
+						let tx = sch_mgr_tx.clone();
+						let mut b1 = b.clone();
+						let go_task = tokio::spawn(async move {
+							match o.search_algo {
+								SearchAlgorithm::Minimax => minimax(&mut b1, &Some(tx), &o).await,
+								SearchAlgorithm::Negamax => negamax(&mut b1, &Some(tx), &o).await,
+								SearchAlgorithm::Negascout => negascout(&mut b1, &Some(tx), &o).await
+							}
+						});
+						let res = go_task.await.expect("Go task failed");
 						let _score = res.0;
 						let mv = res.1;
 						let bestmove = UciMessage::BestMove { 
@@ -121,11 +123,11 @@ pub async fn uci_manager(opts: &Options) {
 						b = b.clone_apply_move(&mv);
 						println!("{}", bestmove);
 					},
-					_ => eprintln!(" Don't know what to do")
+					_ => eprintln!("Don't know what to do")
 				}
 			}
 			Some(line) = sch_mgr_rx.recv() => {
-				println!("{:?}", line);
+				panic!("{:?}", line);
 			}
 		}
 	}
