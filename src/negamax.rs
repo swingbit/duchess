@@ -53,9 +53,7 @@ async fn negamax_search(
 				best_move = Some(*mv);
 			}
 			best_score = score;
-			if tx.as_ref().unwrap().send(SearchInfo{depth, best_move: *mv}).await.is_err() {
-				panic!("Sending error");
-			};
+			tx.unwrap().send(SearchInfo{depth, best_move: *mv}).await.expect("Sending error");
 		}
 		if opts.alpha_beta {
 			alpha = cmp::max(alpha, best_score);
