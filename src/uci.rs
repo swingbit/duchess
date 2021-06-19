@@ -105,12 +105,16 @@ pub async fn uci_manager(opts: &Options) {
 					UciMessage::Go { time_control:_, search_control:_} => {
 						let o = opts.clone();
 						let tx = sch_mgr_tx.clone();
-						let mut b1 = b.clone();
+						let b1 = b.clone();
 						let go_task = tokio::spawn(async move {
+							// Cell is not thead-safe, i.e. it does implement Sync
+							// This unsafe impl promises that the Cell inside Board will be accessed by only 1 thread
+							// (Another option is to use a mutable reference for b, which forces the compiler to assume only 1 reference will exist)
+							unsafe impl Sync for Board {};
 							match o.search_algo {
-								SearchAlgorithm::Minimax => minimax(&mut b1, &Some(tx), &o).await,
-								SearchAlgorithm::Negamax => negamax(&mut b1, &Some(tx), &o).await,
-								SearchAlgorithm::Negascout => negascout(&mut b1, &Some(tx), &o).await
+								SearchAlgorithm::Minimax => minimax(&b1, Some(&tx), &o).await,
+								SearchAlgorithm::Negamax => negamax(&b1, Some(&tx), &o).await,
+								SearchAlgorithm::Negascout => negascout(&b1, Some(&tx), &o).await
 							}
 						});
 						let res = go_task.await.expect("Go task failed");

@@ -7,8 +7,8 @@ use crate::misc::*;
 use crate::ordering::move_ordering;
 
 pub async fn negamax(
-	b: &mut Board,
-	tx: &Option<tokio::sync::mpsc::Sender<SearchInfo>>,
+	b: & Board,
+	tx: Option<&tokio::sync::mpsc::Sender<SearchInfo>>,
 	opts: &Options,
 ) -> (Value, Move) {
 	match b.player {
@@ -28,12 +28,12 @@ pub async fn negamax(
 
 #[async_recursion]
 async fn negamax_search(
-	b: &mut Board,
+	b: &Board,
 	mut alpha: Value,
 	beta: Value,
 	depth: u8,
 	sign: i8,
-	tx: &Option<tokio::sync::mpsc::Sender<SearchInfo>>,
+	tx: Option<&'async_recursion tokio::sync::mpsc::Sender<SearchInfo>>,
 	opts: &Options,
 ) -> (Value, Option<Move>) {
 	if depth == opts.max_depth {
@@ -46,7 +46,7 @@ async fn negamax_search(
 
 	let mut best_score: Value = Value::MIN + 1;
 	let mut best_move = None;
-	for (mv, child) in bs.iter_mut() {
+	for (mv, child) in bs.iter() {
 		let score = -negamax_search(child, -beta, -alpha, depth + 1, -sign, tx, opts).await.0;
 		if score > best_score {
 			if depth == 0 {

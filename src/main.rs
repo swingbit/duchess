@@ -30,9 +30,9 @@ async fn self_play_test(opts: &Options) {
 		let res:(Value,Move);
 
 		match opts.search_algo {
-			SearchAlgorithm::Minimax => res = minimax(&mut b, &None, opts).await,
-			SearchAlgorithm::Negamax => res = negamax(&mut b, &None, opts).await,
-			SearchAlgorithm::Negascout => res = negascout(&mut b, &None, opts).await,
+			SearchAlgorithm::Minimax => res = minimax(&b, None, opts).await,
+			SearchAlgorithm::Negamax => res = negamax(&b, None, opts).await,
+			SearchAlgorithm::Negascout => res = negascout(&b, None, opts).await,
 			// _ => panic!("Algorithm {:?} not supported", opts.search_algo)
 		}
 		let score = res.0;

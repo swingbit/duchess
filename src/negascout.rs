@@ -7,8 +7,8 @@ use crate::misc::*;
 use crate::ordering::move_ordering;
 
 pub async fn negascout(
-	b: &mut Board,
-	tx: &Option<tokio::sync::mpsc::Sender<SearchInfo>>,
+	b: &Board,
+	tx: Option<&tokio::sync::mpsc::Sender<SearchInfo>>,
 	opts: &Options,
 ) -> (Value, Move) {
 	match b.player {
@@ -29,12 +29,12 @@ pub async fn negascout(
 // Implementation inspired to https://homepage.iis.sinica.edu.tw/~tshsu/tcg/2018/slides/slide7.pdf
 #[async_recursion]
 async fn negascout_search(
-	b: &mut Board,
+	b: &Board,
 	alpha: Value,
 	beta: Value,
 	depth: u8,
 	sign: i8,
-	tx: &Option<tokio::sync::mpsc::Sender<SearchInfo>>,
+	tx: Option<&'async_recursion tokio::sync::mpsc::Sender<SearchInfo>>,
 	opts: &Options,
 ) -> (Value, Option<Move>) {
 	if depth == opts.max_depth {
@@ -48,7 +48,7 @@ async fn negascout_search(
 	let mut lower: Value = Value::MIN + 1;
 	let mut upper: Value = beta;
 	let mut best_move = None;
-	for (mv, child) in bs.iter_mut() {
+	for (mv, child) in bs.iter() {
 		let score = -negascout_search(child, -upper, -cmp::max(alpha,lower), depth + 1, -sign, tx, opts).await.0;
 		if score > lower {
 			if depth == 0 {
