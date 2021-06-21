@@ -74,10 +74,18 @@ pub static OPTS_DEFAULT: Options = Options {
 	alpha_beta: true,
 };
 
-#[derive(Debug, Copy, Clone, PartialEq, Eq)]
+#[derive(Default,Debug, Copy, Clone, PartialEq, Eq)]
 pub struct SearchInfo {
 	pub depth: u8,
-	pub best_move: Move,
+	pub best_move: Option<Move>,
+	pub score_cp: i32,
+	pub nodes: u64,
+	pub nps: u64
+}
+impl SearchInfo {
+	pub fn new() -> Self {
+			Default::default()
+	}
 }
 
 #[allow(dead_code,non_snake_case)]

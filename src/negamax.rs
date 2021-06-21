@@ -13,12 +13,12 @@ pub async fn negamax(
 ) -> (Value, Move) {
 	match b.player {
 		Color::Black => {
-			if let (v, Some(mv)) = negamax_search(b, Value::MIN + 1, Value::MAX - 1, 0, -1, tx, opts).await {
+			if let (v, Some(mv)) = negamax_search(b, Value::MIN + 1, Value::MAX - 1, 0, -1, SearchInfo::new(), tx, opts).await {
 				return (-v, mv);
 			}
 		},
 		Color::White => {
-			if let (v, Some(mv)) = negamax_search(b, Value::MIN + 1, Value::MAX - 1, 0, 1, tx, opts).await {
+			if let (v, Some(mv)) = negamax_search(b, Value::MIN + 1, Value::MAX - 1, 0, 1, SearchInfo::new(), tx, opts).await {
 				return (v, mv);
 			}
 		}
@@ -33,13 +33,15 @@ async fn negamax_search(
 	beta: Value,
 	depth: u8,
 	sign: i8,
+	mut si: SearchInfo,
 	tx: Option<&'async_recursion tokio::sync::mpsc::Sender<SearchInfo>>,
 	opts: &Options,
 ) -> (Value, Option<Move>) {
 	if depth == opts.max_depth {
 		return (sign as Value * b.value(), None);
 	}
-	
+	si.depth = depth;
+	// si.nodes = si.nodes + 1;
 	let mut bs: Vec<(Move, Board)> = b.generate_all();
 	
 	move_ordering(&mut bs, sign, opts);
@@ -47,14 +49,16 @@ async fn negamax_search(
 	let mut best_score: Value = Value::MIN + 1;
 	let mut best_move = None;
 	for (mv, child) in bs.iter() {
-		let score = -negamax_search(child, -beta, -alpha, depth + 1, -sign, tx, opts).await.0;
+		let score = -negamax_search(child, -beta, -alpha, depth + 1, -sign, si, tx, opts).await.0;
 		if score > best_score {
 			if depth == 0 {
 				best_move = Some(*mv);
 			}
 			best_score = score;
+			si.best_move = Some(*mv);
+			si.score_cp = best_score as i32;
 			if let Some(info_tx) = tx {
-				info_tx.send(SearchInfo{depth, best_move: *mv}).await.expect("Sending error");
+				info_tx.send(si).await.expect("Sending error");
 			}
 		}
 		if opts.alpha_beta {
