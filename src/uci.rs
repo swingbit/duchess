@@ -55,10 +55,13 @@ impl Move {
 impl SearchInfo {
 	pub fn to_uci(&self) -> UciMessage {
 		let mut attributes: Vec<UciInfoAttribute> = Vec::new();
-		attributes.push(UciInfoAttribute::from_centipawns(self.score_cp));
+		attributes.push(UciInfoAttribute::from_centipawns(self.score_cp as i32));
 		attributes.push(UciInfoAttribute::Depth(self.depth));
+		if let Some(mv) = self.best_move {
+			attributes.push(UciInfoAttribute::CurrMove(mv.to_uci()));
+		}
 		attributes.push(UciInfoAttribute::Nodes(self.nodes));
-		attributes.push(UciInfoAttribute::Nps(self.nps));
+		// attributes.push(UciInfoAttribute::Nps(self.nps));
 		UciMessage::Info(attributes)
 	}
 }

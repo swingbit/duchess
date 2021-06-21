@@ -1,5 +1,6 @@
 use std::str::FromStr;
 use crate::board::{Move};
+use crate::evaluation::{Value};
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub enum SearchAlgorithm {
@@ -78,7 +79,7 @@ pub static OPTS_DEFAULT: Options = Options {
 pub struct SearchInfo {
 	pub depth: u8,
 	pub best_move: Option<Move>,
-	pub score_cp: i32,
+	pub score_cp: Value,
 	pub nodes: u64,
 	pub nps: u64
 }

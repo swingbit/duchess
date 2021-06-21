@@ -11,14 +11,16 @@ pub async fn negamax(
 	tx: Option<&tokio::sync::mpsc::Sender<SearchInfo>>,
 	opts: &Options,
 ) -> (Value, Move) {
+	let mut si = SearchInfo::new();
+
 	match b.player {
 		Color::Black => {
-			if let (v, Some(mv)) = negamax_search(b, Value::MIN + 1, Value::MAX - 1, 0, -1, SearchInfo::new(), tx, opts).await {
+			if let (v, Some(mv)) = negamax_search(b, Value::MIN + 1, Value::MAX - 1, 0, -1, &mut si, tx, opts).await {
 				return (-v, mv);
 			}
 		},
 		Color::White => {
-			if let (v, Some(mv)) = negamax_search(b, Value::MIN + 1, Value::MAX - 1, 0, 1, SearchInfo::new(), tx, opts).await {
+			if let (v, Some(mv)) = negamax_search(b, Value::MIN + 1, Value::MAX - 1, 0, 1, &mut si, tx, opts).await {
 				return (v, mv);
 			}
 		}
@@ -33,7 +35,7 @@ async fn negamax_search(
 	beta: Value,
 	depth: u8,
 	sign: i8,
-	mut si: SearchInfo,
+	si: &mut SearchInfo,
 	tx: Option<&'async_recursion tokio::sync::mpsc::Sender<SearchInfo>>,
 	opts: &Options,
 ) -> (Value, Option<Move>) {
@@ -41,7 +43,8 @@ async fn negamax_search(
 		return (sign as Value * b.value(), None);
 	}
 	si.depth = depth;
-	// si.nodes = si.nodes + 1;
+	si.nodes = si.nodes + 1;
+	
 	let mut bs: Vec<(Move, Board)> = b.generate_all();
 	
 	move_ordering(&mut bs, sign, opts);
@@ -55,10 +58,10 @@ async fn negamax_search(
 				best_move = Some(*mv);
 			}
 			best_score = score;
-			si.best_move = Some(*mv);
-			si.score_cp = best_score as i32;
 			if let Some(info_tx) = tx {
-				info_tx.send(si).await.expect("Sending error");
+				si.best_move = Some(*mv);
+				si.score_cp = best_score;
+				info_tx.send(*si).await.expect("Sending error");
 			}
 		}
 		if opts.alpha_beta {
