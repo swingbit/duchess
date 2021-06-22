@@ -16,7 +16,7 @@ impl Board {
 		} else {
 			f_incr = ops::Sub::sub;
 		}
-		for i in [-1, 1].iter() {
+		for i in [-1, 1] {
 			if let Some(pos) = Pos::at(king_pos.col+i, f_incr(king_pos.row,1)) {
 				if let MoveType::Capture(Piece::Pawn) = self.move_type(king_pos,pos) {
 					return true;

@@ -79,7 +79,7 @@ impl Board {
 				}
 			}
 			/* Capture diagonally */
-			for i in [-1, 1].iter() {
+			for i in [-1, 1] {
 				if let Some(t_pos) = Pos::at(f_pos.col+i, f_incr(f_pos.row,1)) {
 					if let MoveType::Capture(_) = self.move_type(f_pos,t_pos) {
 						moves.push(t_pos);
