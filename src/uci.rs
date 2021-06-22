@@ -118,7 +118,7 @@ pub async fn uci_manager(opts: &Options) {
 					// Cell is not thead-safe, i.e. it does implement Sync
 					// This unsafe impl promises that the Cell inside Board will be accessed by only 1 thread
 					// (Another option is to use a mutable reference for b, which forces the compiler to assume only 1 reference will exist)
-					unsafe impl Sync for Board {};
+					unsafe impl Sync for Board {}
 					match opts.search_algo {
 						SearchAlgorithm::Minimax => minimax(&b1, Some(&sch_mgr_tx), &opts).await,
 						SearchAlgorithm::Negamax => negamax(&b1, Some(&sch_mgr_tx), &opts).await,

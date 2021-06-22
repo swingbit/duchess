@@ -115,7 +115,7 @@ impl Board {
 				}
 			}
 			MoveType::Illegal
-		};
+		}
 
 		fn check_bishop(b: &Board, f_pos: Pos, t_pos: Pos, max_obstacles: u8) -> MoveType {
 			let add = ops::Add::add;
