@@ -44,15 +44,15 @@ async fn maximize(
 	for (mv, child) in bs.iter() {
 		let score = minimize(child, alpha, beta, depth + 1, tx, opts).await.0;
 		if score > best_score {
+			best_score = score;
 			if depth == 0 {
 				best_move = Some(*mv);
 			}
-			best_score = score;
-		}
-		if opts.alpha_beta {
-			alpha = cmp::max(alpha, best_score);
-			if alpha >= beta {
-				break;
+			if opts.alpha_beta {
+				alpha = cmp::max(alpha, best_score);
+				if alpha >= beta {
+					break;
+				}
 			}
 		}
 	}
@@ -81,15 +81,15 @@ async fn minimize(
 	for (mv, child) in bs.iter() {
 		let score = maximize(child, alpha, beta, depth + 1, tx, opts).await.0;
 		if score < best_score {
+			best_score = score;
 			if depth == 0 {
 				best_move = Some(*mv);
 			}
-			best_score = score;
-		}
-		if opts.alpha_beta {
-			beta = cmp::min(beta, best_score);
-			if beta <= alpha {
-				break;
+			if opts.alpha_beta {
+				beta = cmp::min(beta, best_score);
+				if beta <= alpha {
+					break;
+				}
 			}
 		}
 	}

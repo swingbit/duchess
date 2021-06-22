@@ -42,7 +42,6 @@ async fn negamax_search(
 	if depth == opts.max_depth {
 		return (sign as Value * b.value(), None);
 	}
-	si.depth = depth;
 	si.nodes = si.nodes + 1;
 	
 	let mut bs: Vec<(Move, Board)> = b.generate_all();
@@ -54,20 +53,23 @@ async fn negamax_search(
 	for (mv, child) in bs.iter() {
 		let score = -negamax_search(child, -beta, -alpha, depth + 1, -sign, si, tx, opts).await.0;
 		if score > best_score {
+			best_score = score;
 			if depth == 0 {
 				best_move = Some(*mv);
+				// for now only send info at level 0
+				// TODO: send info about the pv
+				if let Some(info_tx) = tx {
+					si.depth = depth;
+					si.best_move = Some(*mv);
+					si.score_cp = best_score;
+					info_tx.send(*si).await.expect("Sending error");
+				}
 			}
-			best_score = score;
-			if let Some(info_tx) = tx {
-				si.best_move = Some(*mv);
-				si.score_cp = best_score;
-				info_tx.send(*si).await.expect("Sending error");
-			}
-		}
-		if opts.alpha_beta {
-			alpha = cmp::max(alpha, best_score);
-			if alpha >= beta {
-				break;
+			if opts.alpha_beta {
+				alpha = cmp::max(alpha, best_score);
+				if alpha >= beta {
+					break;
+				}
 			}
 		}
 	}
