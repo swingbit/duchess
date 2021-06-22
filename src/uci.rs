@@ -57,7 +57,7 @@ impl SearchInfo {
 		let mut attributes: Vec<UciInfoAttribute> = Vec::new();
 		attributes.push(UciInfoAttribute::from_centipawns(self.score_cp as i32));
 		attributes.push(UciInfoAttribute::Depth(self.depth));
-		if let Some(mv) = self.best_move {
+		if let Some(mv) = self.curr_move {
 			attributes.push(UciInfoAttribute::CurrMove(mv.to_uci()));
 		}
 		attributes.push(UciInfoAttribute::Nodes(self.nodes));

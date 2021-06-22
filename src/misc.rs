@@ -78,7 +78,7 @@ pub static OPTS_DEFAULT: Options = Options {
 #[derive(Default,Debug, Copy, Clone, PartialEq, Eq)]
 pub struct SearchInfo {
 	pub depth: u8,
-	pub best_move: Option<Move>,
+	pub curr_move: Option<Move>,
 	pub score_cp: Value,
 	pub nodes: u64,
 	pub nps: u64

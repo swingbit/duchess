@@ -60,7 +60,7 @@ async fn negamax_search(
 				// TODO: send info about the pv
 				if let Some(info_tx) = tx {
 					si.depth = depth;
-					si.best_move = Some(*mv);
+					si.curr_move = Some(*mv);
 					si.score_cp = best_score;
 					info_tx.send(*si).await.expect("Sending error");
 				}
