@@ -19,8 +19,9 @@ Because it's fun and because I needed an excuse to get accustomed to Rust.
 - Search algorithm:
   - (done) Minimax (fail-soft α-β pruning)
   - (done) Negamax (fail-soft α-β pruning)
-  - (done) Negascout  / Principal Variation Search (fail-soft α-β pruning)
+  - (done) Negascout (fail-soft α-β pruning)
 - Optional optimizations:
+  - (missing) transposition table
   - (partial) move ordering
   - (missing) more efficient board representations
 
