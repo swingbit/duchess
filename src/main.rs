@@ -1,4 +1,4 @@
-use clap::{App, Arg};
+use clap::{Command, Arg};
 
 mod board;
 mod evaluation;
@@ -46,12 +46,12 @@ async fn self_play_test(opts: &Options) {
 async fn main() {
 	let mut opts = OPTS_DEFAULT.clone();
 
-	let matches = App::new("Duchess")
+	let matches = Command::new("Duchess")
 		.version("0.1.0")
 		.author("Roberto Cornacchia <roberto.cornacchia@gmail.com>")
 		.about("A simple chess engine")
 		.arg(
-			Arg::with_name("ui")
+			Arg::new("ui")
 				.long("ui")
 				.takes_value(true)
 				.possible_values(&["uci", "ansiterm"])
@@ -59,8 +59,8 @@ async fn main() {
 				.help("The UI talking to this engine"),
 		)
 		.arg(
-			Arg::with_name("algo")
-				.short("a")
+			Arg::new("algo")
+				.short('a')
 				.long("algorithm")
 				.takes_value(true)
 				.possible_values(&["minimax", "negamax", "negascout"])
@@ -68,8 +68,8 @@ async fn main() {
 				.help("Search algorithm"),
 		)
 		.arg(
-			Arg::with_name("ord")
-				.short("o")
+			Arg::new("ord")
+				.short('o')
 				.long("ordering")
 				.takes_value(true)
 				.possible_values(&["none", "random", "eval"])
@@ -77,15 +77,15 @@ async fn main() {
 				.help("Move ordering strategy"),
 		)
 		.arg(
-			Arg::with_name("depth")
-				.short("d")
+			Arg::new("depth")
+				.short('d')
 				.long("max-depth")
 				.takes_value(true)
 				.default_value("5")
 				.help("Maximum depth of the search algorithm"),
 		)
 		.arg(
-			Arg::with_name("no-alphabeta")
+			Arg::new("no-alphabeta")
 				.long("no-alphabeta")
 				.help("Disable alpha-beta pruning"),
 		)
