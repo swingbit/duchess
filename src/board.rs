@@ -25,6 +25,21 @@ impl Color {
 			Color::Black => Color::White,
 		}
 	}
+
+	pub fn from_char(c: char) -> Option<Color> {
+		match c {
+			'b' | 'B' => Some(Color::Black),
+			'w' | 'W' => Some(Color::White),
+			_ => None
+		}
+	}
+
+	pub fn to_char(&self) -> char {
+		match self {
+			Color::White => 'w',
+			Color::Black => 'b',
+		}
+	}
 }
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
@@ -68,6 +83,26 @@ pub struct Tile {
 	pub color: Color,
 }
 
+impl Tile {
+	pub fn from_char(c: char) -> Option<Tile> {
+		match c {
+			'p' => Some(Tile { piece: Piece::Pawn, color: Color::Black}),
+			'n' => Some(Tile { piece: Piece::Knight, color: Color::Black}),
+			'b' => Some(Tile { piece: Piece::Bishop, color: Color::Black}),
+			'r' => Some(Tile { piece: Piece::Rook, color: Color::Black}),
+			'k' => Some(Tile { piece: Piece::King, color: Color::Black}),
+			'q' => Some(Tile { piece: Piece::Queen, color: Color::Black}),
+			'P' => Some(Tile { piece: Piece::Pawn, color: Color::White}),
+			'N' => Some(Tile { piece: Piece::Knight, color: Color::White}),
+			'B' => Some(Tile { piece: Piece::Bishop, color: Color::White}),
+			'R' => Some(Tile { piece: Piece::Rook, color: Color::White}),
+			'K' => Some(Tile { piece: Piece::King, color: Color::White}),
+			'Q' => Some(Tile { piece: Piece::Queen, color: Color::White}),
+			_ => None
+		}
+	}
+
+}
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub struct Pos {
 	// we use i8 instead of u8
@@ -190,37 +225,108 @@ pub struct Board {
 }
 
 impl Board {
-	pub fn new(player: Color) -> Board {
-		let mut b = Board {
-			tiles: [[None; 8]; 8],
+	pub fn from_fen(s: &str) -> Result<Board, ParseError> {
+		fn parse_ranks(s: Option<&str>) -> Result <([[Option<Tile>; 8]; 8], [Pos; 2]), ParseError> {
+			let s = s.ok_or(ParseError)?;
+			let ranks = s.split('/');
+
+			let mut tiles:[[Option<Tile>; 8]; 8] = [[None; 8]; 8];
+			let mut king_pos:[Option<Pos>; 2] = [None; 2];
+
+			let mut rowcount:usize = 0;
+			for rank in ranks {
+				let mut colcount = 0; 
+
+				for x in rank.chars() {
+					if let Some(blanks) = char::to_digit(x, 10) {
+						colcount += blanks as usize
+					} else {
+						let t:Option<Tile> = Tile::from_char(x);
+						if t.is_none() {
+							return Err(ParseError)
+						}
+						tiles[7-rowcount][colcount] = t;
+						colcount += 1;
+						if t.unwrap().piece == Piece::King {
+							king_pos[t.unwrap().color as usize] = Pos::at(colcount as i8,7-rowcount as i8);
+						}
+					}
+				}
+				if colcount != 8 {
+					return Err(ParseError)
+				}
+				rowcount += 1;
+			}
+			if rowcount != 8 {
+				return Err(ParseError)
+			}
+			let king_pos = if let [Some(a), Some(b)] = king_pos {
+				[a,b]
+			} else {
+				return Err(ParseError)
+			};
+
+			Ok((tiles,king_pos))
+		}
+
+		fn parse_player(s: Option<&str>) -> Result <Color, ParseError> {
+			let s = s.ok_or(ParseError)?;
+
+			if s.len() != 1 {
+				return Err(ParseError)
+			}
+
+			match s.chars().nth(0) {
+				Some('b') => Ok(Color::Black),
+				Some('w') => Ok(Color::White),
+				_ => Err(ParseError)
+			}
+		}
+
+		fn parse_castle(s: Option<&str>) -> Result <([bool; 2], [bool; 2]), ParseError> {
+			let s = s.ok_or(ParseError)?;
+
+			let mut can_parse_left = [false ;2];
+			let mut can_parse_right = [false ;2];
+
+			if s.find('K').is_some() {
+				can_parse_right[Color::White as usize] = true;
+			}
+			if s.find('k').is_some() {
+				can_parse_right[Color::Black as usize] = true;
+			}
+			if s.find('Q').is_some() {
+				can_parse_left[Color::White as usize] = true;
+			}
+			if s.find('q').is_some() {
+				can_parse_left[Color::Black as usize] = true;
+			}
+
+			Ok((can_parse_left, can_parse_right))
+		}
+		
+		let mut split = s.split_whitespace();
+		let (tiles, king_pos) = parse_ranks(split.next())?;
+		let player = parse_player(split.next())?;
+		let (can_castle_left, can_castle_right) = parse_castle(split.next())?;
+
+		// TODO, parse the en-passant and move counts
+
+		let b = Board {
+			tiles,
 			player,
-			king_pos: [Pos::at(4,7).unwrap(), Pos::at(4,0).unwrap()],
-			can_castle_left: [true; 2],
-			can_castle_right: [true; 2],
+			king_pos,
+			can_castle_left,
+			can_castle_right,
 			stored_value: Cell::default(),
 		};
-		
-		b.tiles[0][0] = Some(Tile {piece: Piece::Rook, color: Color::White});
-		b.tiles[0][1] = Some(Tile {piece: Piece::Knight, color: Color::White});
-		b.tiles[0][2] = Some(Tile {piece: Piece::Bishop, color: Color::White});
-		b.tiles[0][3] = Some(Tile {piece: Piece::Queen, color: Color::White});
-		b.tiles[0][4] = Some(Tile {piece: Piece::King, color: Color::White});
-		b.tiles[0][5] = Some(Tile {piece: Piece::Bishop, color: Color::White});
-		b.tiles[0][6] = Some(Tile {piece: Piece::Knight, color: Color::White});
-		b.tiles[0][7] = Some(Tile {piece: Piece::Rook, color: Color::White});
-		b.tiles[1] = [Some(Tile {piece: Piece::Pawn, color: Color::White}); 8];
 
-		b.tiles[7][0] = Some(Tile {piece: Piece::Rook, color: Color::Black});
-		b.tiles[7][1] = Some(Tile {piece: Piece::Knight, color: Color::Black});
-		b.tiles[7][2] = Some(Tile {piece: Piece::Bishop, color: Color::Black});
-		b.tiles[7][3] = Some(Tile {piece: Piece::Queen, color: Color::Black});
-		b.tiles[7][4] = Some(Tile {piece: Piece::King, color: Color::Black});
-		b.tiles[7][5] = Some(Tile {piece: Piece::Bishop, color: Color::Black});
-		b.tiles[7][6] = Some(Tile {piece: Piece::Knight, color: Color::Black});
-		b.tiles[7][7] = Some(Tile {piece: Piece::Rook, color: Color::Black});
-		b.tiles[6] = [Some(Tile {piece: Piece::Pawn, color: Color::Black}); 8];
+		Ok(b)
+	}
 
-		b
+	pub fn new(player: Color) -> Board {
+		let fen = format!("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR {} KQkq - 0 1", player.to_char());
+		Self::from_fen(&fen).unwrap()
 	}
 
 	#[inline]
