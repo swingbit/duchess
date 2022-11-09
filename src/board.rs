@@ -276,11 +276,12 @@ impl Board {
 				return Err(ParseError)
 			}
 
-			match s.chars().nth(0) {
-				Some('b') => Ok(Color::Black),
-				Some('w') => Ok(Color::White),
-				_ => Err(ParseError)
+			if let Some(c) = s.chars().nth(0) {
+				if let Some(color) = Color::from_char(c) {
+					return Ok(color)
+				}
 			}
+			return Err(ParseError)
 		}
 
 		fn parse_castle(s: Option<&str>) -> Result <([bool; 2], [bool; 2]), ParseError> {
