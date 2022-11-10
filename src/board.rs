@@ -53,14 +53,14 @@ pub enum Piece {
 }
 
 impl Piece {
-	pub fn as_char(self) -> Option<char> {
+	pub fn as_char(self) -> char {
 		match self {
-				Piece::Pawn => None,
-				Piece::Knight => Some('n'),
-				Piece::Bishop => Some('b'),
-				Piece::Rook => Some('r'),
-				Piece::Queen => Some('q'),
-				Piece::King => Some('k')
+				Piece::Pawn => 'p',
+				Piece::Knight => 'n',
+				Piece::Bishop => 'b',
+				Piece::Rook => 'r',
+				Piece::Queen => 'q',
+				Piece::King => 'k'
 		}
 	}
 
@@ -102,7 +102,24 @@ impl Tile {
 		}
 	}
 
+	pub fn as_char(&self) -> char {
+		match self {
+			Tile { piece: Piece::Pawn, color: Color::Black} => 'p',
+			Tile { piece: Piece::Knight, color: Color::Black} => 'n',
+			Tile { piece: Piece::Bishop, color: Color::Black} => 'b',
+			Tile { piece: Piece::Rook, color: Color::Black} => 'r',
+			Tile { piece: Piece::King, color: Color::Black} => 'k',
+			Tile { piece: Piece::Queen, color: Color::Black} => 'q',
+			Tile { piece: Piece::Pawn, color: Color::White} => 'P',
+			Tile { piece: Piece::Knight, color: Color::White} => 'N',
+			Tile { piece: Piece::Bishop, color: Color::White} => 'B',
+			Tile { piece: Piece::Rook, color: Color::White} => 'R',
+			Tile { piece: Piece::King, color: Color::White} => 'K',
+			Tile { piece: Piece::Queen, color: Color::White} => 'Q'
+		}
+	}
 }
+
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub struct Pos {
 	// we use i8 instead of u8
@@ -141,8 +158,8 @@ impl fmt::Display for Move {
 	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
 		let mut s = write!(f, "{}{}", self.f_pos, self.t_pos);
 		if let Some(p) = self.promotion {
-			if let Some(c) = p.as_char() {
-					s = write!(f, "{}", c);
+			if p != Piece::Pawn {
+					s = write!(f, "{}", p.as_char());
 			}
 		}
 		s
@@ -325,6 +342,63 @@ impl Board {
 		Ok(b)
 	}
 
+	pub fn to_fen(&self) -> String {
+		let mut s = String::new();
+
+		// ranks
+		for r in (0..8).rev() {
+			let mut blanks = 0;
+			for c in 0..8 {
+				let pos = Pos::at(c,r).unwrap();
+				if let Some(tile) = self.at(pos) {
+					if blanks > 0 {
+						s.push(char::from_digit(blanks, 10).unwrap());
+						blanks = 0;
+					}
+					s.push(tile.as_char());
+				} else {
+					blanks += 1;
+				}
+			}
+			if blanks > 0 {
+				s.push(char::from_digit(blanks, 10).unwrap());
+			}
+			if r > 0 {
+				s.push('/');
+			}
+		}
+
+		s.push(' ');
+
+		// player
+		s.push(self.player.to_char());
+
+		s.push(' ');
+
+		// castle
+		if self.can_castle_left == [false; 2] && self.can_castle_right == [false; 2] {
+			s.push('-');
+		} else {
+			if self.can_castle_right[Color::White as usize] {
+				s.push('K');
+			}
+			if self.can_castle_left[Color::White as usize] {
+				s.push('Q');
+			}
+			if self.can_castle_right[Color::Black as usize] {
+				s.push('k');
+			}
+			if self.can_castle_left[Color::Black as usize] {
+				s.push('q');
+			}
+		}
+
+		// TODO: implement the rest
+		s.push_str(" - 0 0");
+
+		s
+	}
+	
 	pub fn new(player: Color) -> Board {
 		let fen = format!("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR {} KQkq - 0 1", player.to_char());
 		Self::from_fen(&fen).unwrap()
@@ -411,18 +485,7 @@ impl Board {
 				let pos = Pos::at(c,r).unwrap();
 				let mut p = ' ';
 				if let Some(tile) = self.at(pos) {
-					p = match tile.piece {
-						Piece::Pawn => 'p',
-						Piece::Knight => 'n',
-						Piece::Bishop => 'b',
-						Piece::Rook => 'r',
-						Piece::Queen => 'q',
-						Piece::King => 'k',
-					};
-					
-					if tile.color == Color::White {
-						p = p.to_ascii_uppercase();
-					}
+					p = tile.as_char();
 				}
 				s.push_str(&format!("|{}",p));
 			}
@@ -442,7 +505,7 @@ impl Board {
 
 #[cfg(test)]
 mod tests {
-	use crate::board::{Pos,Move};
+	use crate::board::{Pos,Move,Board};
 	#[test]
 	pub fn test_parse_pos() {
 		let coords_in = "G8";
@@ -464,5 +527,12 @@ mod tests {
 		let mv = mv_in.parse::<Move>().expect("legal");
 		let mv_out = mv.to_string();
 		assert_eq!(mv_in.to_ascii_lowercase(), mv_out);
+	}
+
+	#[test]
+	pub fn test_fen1() {
+		let fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 0";
+		let b = Board::from_fen(fen).unwrap();
+		assert_eq!(fen, b.to_fen());
 	}
 }
