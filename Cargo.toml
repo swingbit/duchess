@@ -12,5 +12,14 @@ edition = "2018"
 clap = "3.1.8"
 rand = "0.8.5"
 vampirc-uci = "0.11.1"
-tokio = { version = "1", features = ["full"] }
-async-recursion = "1.0.0"
+getrandom = { features = ["js"] }
+wasm-bindgen = "0.2.83"
+
+[lib]
+name = "duchesslib"
+path = "src/lib.rs"
+crate-type =["cdylib"]
+
+#[[bin]]
+#name = "duchess"
+#path = "src/main.rs"

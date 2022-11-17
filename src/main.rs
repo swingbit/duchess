@@ -22,7 +22,7 @@ use crate::misc::*;
 
 extern crate vampirc_uci;
 
-async fn self_play_test(opts: &Options) {
+fn self_play_test(opts: &Options) {
 	let mut b: Board = Board::new(Color::White);
 	/* Just for testing: AI playing against itself in a loop */
 
@@ -30,9 +30,9 @@ async fn self_play_test(opts: &Options) {
 		let res:(Value,Move);
 
 		match opts.search_algo {
-			SearchAlgorithm::Minimax => res = minimax(&b, None, opts).await,
-			SearchAlgorithm::Negamax => res = negamax(&b, None, opts).await,
-			SearchAlgorithm::Negascout => res = negascout(&b, None, opts).await,
+			SearchAlgorithm::Minimax => res = minimax(&b, opts),
+			SearchAlgorithm::Negamax => res = negamax(&b, opts),
+			SearchAlgorithm::Negascout => res = negascout(&b, opts),
 			// _ => panic!("Algorithm {:?} not supported", opts.search_algo)
 		}
 		let score = res.0;
@@ -42,8 +42,7 @@ async fn self_play_test(opts: &Options) {
 	}
 }
 
-#[tokio::main]
-async fn main() {
+fn main() {
 	let mut opts = OPTS_DEFAULT.clone();
 
 	let matches = Command::new("Duchess")
@@ -114,8 +113,8 @@ async fn main() {
 		opts.alpha_beta = !matches.is_present("no-alphabeta");
 		// println!("Options:\n {:#?}",opts);
 		match opts.ui {
-			Ui::Uci => uci_manager(&opts.clone()).await,
-			Ui::AnsiTerm => self_play_test(&opts.clone()).await,
+			Ui::Uci => uci_manager(&opts.clone()),
+			Ui::AnsiTerm => self_play_test(&opts.clone()),
 		}
 
 }

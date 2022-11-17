@@ -1,4 +1,4 @@
-
+use std::io::{self, BufRead};
 use vampirc_uci::{UciMessage,UciSquare,UciPiece,UciMove,UciInfoAttribute,parse_one};
 use crate::board::{Board,Pos,Piece,Move,Color};
 use crate::minimax::{minimax};
@@ -66,23 +66,11 @@ impl SearchInfo {
 	}
 }
 
-pub async fn uci_manager(opts: &Options) {
-	use tokio::sync::{mpsc};
-	use tokio::io;
-	use tokio::io::AsyncBufReadExt;
-
-	// this task receives search info from the running engine and ships it back to UCI
-	let (sch_mgr_tx, mut sch_mgr_rx):(mpsc::Sender<SearchInfo>,mpsc::Receiver<SearchInfo>) = mpsc::channel(32);
-	tokio::spawn(async move {
-		while let Some(search_info) = sch_mgr_rx.recv().await {
-			println!("{}", search_info.to_uci());
-		}
-	});
-
+pub fn uci_manager(opts: &Options) {
 	let reader = io::BufReader::new(io::stdin());
 	let mut lines = reader.lines();
 	let mut b: Board = Board::new(Color::White);
-	while let Ok(Some(line)) = lines.next_line().await {
+	while let Some(Ok(line)) = lines.next() {
 		// in_mgr_tx.send(line).await.unwrap();
 		let msg: UciMessage = parse_one(&line);
 		match msg {
@@ -112,20 +100,12 @@ pub async fn uci_manager(opts: &Options) {
 			},
 			UciMessage::Go { time_control:_, search_control:_} => {
 				let opts = opts.clone();
-				let sch_mgr_tx = sch_mgr_tx.clone();
 				let b1 = b.clone();
-				let go_task = tokio::spawn(async move {
-					// Cell is not thead-safe, i.e. it does implement Sync
-					// This unsafe impl promises that the Cell inside Board will be accessed by only 1 thread
-					// (Another option is to use a mutable reference for b, which forces the compiler to assume only 1 reference will exist)
-					unsafe impl Sync for Board {}
-					match opts.search_algo {
-						SearchAlgorithm::Minimax => minimax(&b1, Some(&sch_mgr_tx), &opts).await,
-						SearchAlgorithm::Negamax => negamax(&b1, Some(&sch_mgr_tx), &opts).await,
-						SearchAlgorithm::Negascout => negascout(&b1, Some(&sch_mgr_tx), &opts).await
-					}
-				});
-				let res = go_task.await.expect("Go task failed");
+				let res = match opts.search_algo {
+					SearchAlgorithm::Minimax => minimax(&b1, &opts),
+					SearchAlgorithm::Negamax => negamax(&b1, &opts),
+					SearchAlgorithm::Negascout => negascout(&b1, &opts)
+				};
 				let _score = res.0;
 				let mv = res.1;
 				let bestmove = UciMessage::best_move(mv.to_uci());
