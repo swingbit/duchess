@@ -162,17 +162,17 @@ impl Board {
 		self.generate_rook(moves,f_pos,1);
 
 		// /* castling */
-		if self.can_castle_left[self.player as usize] {
+		if self.can_castle_qs[self.player as usize] {
 			if self.at(Pos::at(f_pos.col-1,f_pos.row).unwrap()).is_none() &&
 				self.at(Pos::at(f_pos.col-2,f_pos.row).unwrap()).is_none() &&
 				!self.is_king_in_check(self.player) {
 					moves.push(Pos::at(f_pos.col-2,f_pos.row).unwrap());
 			}
 		}
-		if self.can_castle_right[self.player as usize] {
+		if self.can_castle_ks[self.player as usize] {
 			if self.at(Pos::at(f_pos.col+1,f_pos.row).unwrap()).is_none() &&
 				self.at(Pos::at(f_pos.col+2,f_pos.row).unwrap()).is_none() &&
-				!self.is_king_in_check(self.player)  {
+				!self.is_king_in_check(self.player) {
 					moves.push(Pos::at(f_pos.col+2,f_pos.row).unwrap());
 			}
 		}

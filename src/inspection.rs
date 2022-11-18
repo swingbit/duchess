@@ -240,23 +240,11 @@ impl Board {
 				Piece::King => {
 					if (f_pos.col - t_pos.col).abs() == 2 {
 						/* castling (TODO: cannot be used if currently in check) */
-						match self.player {
-							Color::Black => {
-								if !self.can_castle_left[self.player as usize] && t_pos.col == 6 {
-									return MoveType::Illegal;
-								}
-								if !self.can_castle_right[self.player as usize] && t_pos.col == 2 {
-									return MoveType::Illegal;
-								}
-							},
-							Color::White => {
-								if !self.can_castle_left[self.player as usize] && t_pos.col == 2 {
-									return MoveType::Illegal;
-								}
-								if !self.can_castle_right[self.player as usize] && t_pos.col == 6 {
-									return MoveType::Illegal;
-								}
-							}
+						if !self.can_castle_qs[self.player as usize] && t_pos.col == 2 {
+							return MoveType::Illegal;
+						}
+						if !self.can_castle_ks[self.player as usize] && t_pos.col == 6 {
+							return MoveType::Illegal;
 						}
 						if self.at(Pos::at(t_pos.col,f_pos.row).unwrap()).is_none() &&
 							self.at(Pos::at((f_pos.col + t_pos.col)/2,f_pos.row).unwrap()).is_none() {
@@ -302,8 +290,6 @@ impl Board {
 }
 
 mod tests {
-	use crate::board::{Board, Color};
-
 	#[test]
 	pub fn test_is_king_in_check() {
 		let fen = "rnbqk1nr/pppp1ppp/8/8/1bPp4/6P1/PP2PP1P/RNBQKBNR w KQkq - 0 0";

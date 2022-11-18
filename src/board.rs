@@ -234,10 +234,8 @@ pub struct Board {
 	pub tiles: [[Option<Tile>; 8]; 8],
 	pub player: Color,
 	pub king_pos: [Pos; 2],
-	/*	left and right in the castling always refers to 
-			looking at the board from the white's position */
-	pub can_castle_left: [bool; 2],
-	pub can_castle_right: [bool; 2],
+	pub can_castle_qs: [bool; 2],
+	pub can_castle_ks: [bool; 2],
 	pub stored_value: Cell<Option<Value>>,
 }
 
@@ -304,29 +302,29 @@ impl Board {
 		fn parse_castle(s: Option<&str>) -> Result <([bool; 2], [bool; 2]), ParseError> {
 			let s = s.ok_or(ParseError)?;
 
-			let mut can_parse_left = [false ;2];
-			let mut can_parse_right = [false ;2];
+			let mut can_castle_qs = [false ;2];
+			let mut can_castle_ks = [false ;2];
 
 			if s.find('K').is_some() {
-				can_parse_right[Color::White as usize] = true;
+				can_castle_ks[Color::White as usize] = true;
 			}
 			if s.find('k').is_some() {
-				can_parse_right[Color::Black as usize] = true;
+				can_castle_ks[Color::Black as usize] = true;
 			}
 			if s.find('Q').is_some() {
-				can_parse_left[Color::White as usize] = true;
+				can_castle_qs[Color::White as usize] = true;
 			}
 			if s.find('q').is_some() {
-				can_parse_left[Color::Black as usize] = true;
+				can_castle_qs[Color::Black as usize] = true;
 			}
 
-			Ok((can_parse_left, can_parse_right))
+			Ok((can_castle_qs, can_castle_ks))
 		}
 		
 		let mut split = s.split_whitespace();
 		let (tiles, king_pos) = parse_ranks(split.next())?;
 		let player = parse_player(split.next())?;
-		let (can_castle_left, can_castle_right) = parse_castle(split.next())?;
+		let (can_castle_qs, can_castle_ks) = parse_castle(split.next())?;
 
 		// TODO, parse the en-passant and move counts
 
@@ -334,8 +332,8 @@ impl Board {
 			tiles,
 			player,
 			king_pos,
-			can_castle_left,
-			can_castle_right,
+			can_castle_qs,
+			can_castle_ks,
 			stored_value: Cell::default(),
 		};
 
@@ -376,19 +374,19 @@ impl Board {
 		s.push(' ');
 
 		// castle
-		if self.can_castle_left == [false; 2] && self.can_castle_right == [false; 2] {
+		if self.can_castle_ks == [false; 2] && self.can_castle_qs == [false; 2] {
 			s.push('-');
 		} else {
-			if self.can_castle_right[Color::White as usize] {
+			if self.can_castle_ks[Color::White as usize] {
 				s.push('K');
 			}
-			if self.can_castle_left[Color::White as usize] {
+			if self.can_castle_qs[Color::White as usize] {
 				s.push('Q');
 			}
-			if self.can_castle_right[Color::Black as usize] {
+			if self.can_castle_ks[Color::Black as usize] {
 				s.push('k');
 			}
-			if self.can_castle_left[Color::Black as usize] {
+			if self.can_castle_qs[Color::Black as usize] {
 				s.push('q');
 			}
 		}
@@ -446,8 +444,8 @@ impl Board {
 		if t.piece == Piece::King {
 			b.king_pos[t.color as usize] = mv.t_pos;
 			/* disallow castling */
-			b.can_castle_left[t.color as usize] = false;
-			b.can_castle_right[t.color as usize] = false;
+			b.can_castle_ks[t.color as usize] = false;
+			b.can_castle_qs[t.color as usize] = false;
 		}
 
 		// /* Rook moved: disallow castling on its side */
@@ -455,18 +453,18 @@ impl Board {
 			match t.color {
 				Color::Black => {
 					if mv.f_pos == Pos::at(0,7).unwrap() {
-						b.can_castle_left[t.color as usize] = false;
+						b.can_castle_qs[t.color as usize] = false;
 					}
 					if mv.f_pos == Pos::at(7,7).unwrap() {
-						b.can_castle_right[t.color as usize] = false;
+						b.can_castle_ks[t.color as usize] = false;
 					}
 				},
 				Color::White => {
 					if mv.f_pos == Pos::at(0,0).unwrap() {
-						b.can_castle_left[t.color as usize] = false;
+						b.can_castle_qs[t.color as usize] = false;
 					}
 					if mv.f_pos == Pos::at(7,0).unwrap() {
-						b.can_castle_right[t.color as usize] = false;
+						b.can_castle_ks[t.color as usize] = false;
 					}
 				}
 			}
@@ -496,8 +494,8 @@ impl Board {
 		s.push_str(&format!("value: {:?}\n",self.stored_value));
 		s.push_str(&format!("player: {:?}\n",self.player));
 		s.push_str(&format!("king_pos: {:?}\n",self.king_pos));
-		s.push_str(&format!("can_castle_left: {:?}\n",self.can_castle_left));
-		s.push_str(&format!("can_castle_right: {:?}\n",self.can_castle_right));
+		s.push_str(&format!("can_castle_ks: {:?}\n",self.can_castle_ks));
+		s.push_str(&format!("can_castle_qs: {:?}\n",self.can_castle_qs));
 		s.push_str(&format!("check: {}\n",self.is_king_in_check(self.player)));
 		s
 	}
