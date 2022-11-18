@@ -263,10 +263,10 @@ impl Board {
 							return Err(ParseError)
 						}
 						tiles[7-rowcount][colcount] = t;
-						colcount += 1;
 						if t.unwrap().piece == Piece::King {
 							king_pos[t.unwrap().color as usize] = Pos::at(colcount as i8,7-rowcount as i8);
 						}
+						colcount += 1;
 					}
 				}
 				if colcount != 8 {
@@ -505,7 +505,7 @@ impl Board {
 
 #[cfg(test)]
 mod tests {
-	use crate::board::{Pos,Move,Board};
+	use crate::board::{Pos,Move,Board,Color};
 	#[test]
 	pub fn test_parse_pos() {
 		let coords_in = "G8";
@@ -534,5 +534,7 @@ mod tests {
 		let fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 0";
 		let b = Board::from_fen(fen).unwrap();
 		assert_eq!(fen, b.to_fen());
+		assert_eq!(b.king_pos[Color::White as usize], Pos::at(4,0).unwrap());
+		assert_eq!(b.king_pos[Color::Black as usize], Pos::at(4,7).unwrap());
 	}
 }
