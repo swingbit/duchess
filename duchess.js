@@ -1,4 +1,4 @@
-import { best_move } from './pkg/duchesslib.js';
+import { check_move, best_move } from './pkg/duchesslib.js';
 
 var board = null
 
@@ -16,17 +16,16 @@ function onDrop (source, target, piece, newPos, oldPos, orientation) {
   // console.log('Orientation: ' + orientation)
   // console.log('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
 
+  var fromFEN = Chessboard.objToFen(oldPos) + ' ' + piece[0] + ' KQkq'
+  if(check_move(fromFEN, source, target) == 'illegal') {
+    return 'snapback'
+  }
+
   var player = piece[0] == 'w' ? 'b' : 'w'
-  var fen = Chessboard.objToFen(newPos) + ' ' + player + ' KQkq'
-  window.setTimeout(duchessMove, 100, fen)
+  var toFEN = Chessboard.objToFen(newPos) + ' ' + player + ' KQkq'
+  window.setTimeout(duchessMove, 100, toFEN)
 }
 
-// function onMoveEnd (oldPos, newPos) {
-//   console.log('Move animation complete:')
-//   console.log('Old position: ' + Chessboard.objToFen(oldPos))
-//   console.log('New position: ' + Chessboard.objToFen(newPos))
-//   console.log('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
-// }
 
 export function duchess () {
   var config = {

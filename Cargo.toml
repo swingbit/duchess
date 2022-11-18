@@ -20,6 +20,6 @@ name = "duchesslib"
 path = "src/lib.rs"
 crate-type =["cdylib"]
 
-#[[bin]]
-#name = "duchess"
-#path = "src/main.rs"
+[[bin]]
+name = "duchess"
+path = "src/main.rs"

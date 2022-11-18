@@ -1,9 +1,9 @@
 use std::ops;
 
-use crate::board::{Board,Pos,MoveType,Piece,Color};
+use crate::board::{Board,Pos,MoveType,Piece,Color,Move};
 
 impl Board {
-	/// Check if the King of the given color is in check,
+	/// Determine whether the King of the given color is in check,
 	/// by reversing an attack from the king's position
 	/// using all types of movement
 	pub fn is_king_in_check(&self, color: Color) -> bool {
@@ -80,12 +80,7 @@ impl Board {
 		MoveType::Illegal
 	}
 
-  /// Checks whether a move is valid.
-	/// Not needed for generated moves, only for human moves.
-	/// Allows to "see through" a specified number of obstacles
-	#[allow(dead_code)]
-	pub fn check_move(&self, f_pos: Pos, t_pos: Pos, max_obstacles: u8) -> MoveType {
-
+	fn check_piece(self: &Board, f_pos: Pos, t_pos: Pos, max_obstacles: u8) -> MoveType {
 		/* Checks possible moves from a given point in all directions */
 		fn check_arm(b: &Board, f_pos: Pos, t_pos: Pos, max_obstacles: u8, 
 					f_c:fn(i8,i8)->i8, f_r:fn(i8,i8)->i8) -> MoveType {
@@ -202,7 +197,7 @@ impl Board {
 
 				Piece::Knight => {
 					if ((f_pos.row-t_pos.row).abs() == 1 && (f_pos.col-t_pos.col).abs() == 2) ||
-						 ((f_pos.row-t_pos.row).abs() == 2 && (f_pos.col-t_pos.col).abs() == 1) {
+						((f_pos.row-t_pos.row).abs() == 2 && (f_pos.col-t_pos.col).abs() == 1) {
 						if let Some(t_tile)	= self.at(t_pos) {
 							if t_tile.color != f_tile.color {
 								return MoveType::Capture(t_tile.piece);
@@ -251,7 +246,7 @@ impl Board {
 							}
 						}
 						if self.at(Pos::at(t_pos.col,f_pos.row).unwrap()).is_none() &&
-							 self.at(Pos::at((f_pos.col + t_pos.col)/2,f_pos.row).unwrap()).is_none() {
+							self.at(Pos::at((f_pos.col + t_pos.col)/2,f_pos.row).unwrap()).is_none() {
 							return MoveType::Move;
 						}
 						return MoveType::Illegal;
@@ -266,5 +261,29 @@ impl Board {
 			}
 		}
 		MoveType::Illegal
+	}
+
+	/// Checks whether a move is valid.
+	/// Not needed for generated moves, only for human moves.
+	/// Allows to "see through" a specified number of obstacles
+	#[allow(dead_code)]
+	pub fn check_move(&self, f_pos: Pos, t_pos: Pos, max_obstacles: u8) -> MoveType {
+		
+		// Conditions:
+		// - the move must be valid for that piece
+		// - the king must not be in check after the move
+		// - [TODO] if the move is a castle, that must be allowed 
+		return match self.check_piece(f_pos, t_pos, max_obstacles) {
+			MoveType::Illegal => MoveType::Illegal,
+			mt => {
+				let mv = Move { f_pos, t_pos, promotion: None };
+				let b = self.clone_apply_move(&mv);
+				if b.is_king_in_check(self.at(f_pos).unwrap().color) {
+					MoveType::Illegal
+				} else {
+						mt
+				}
+			}
+		};
 	}
 }
