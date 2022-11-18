@@ -19,7 +19,7 @@ impl Board {
 		for i in [-1, 1] {
 			if let Some(pos) = Pos::at(king_pos.col+i, f_incr(king_pos.row,1)) {
 				if let MoveType::Capture(Piece::Pawn) = self.move_type(king_pos,pos) {
-					return true;
+					return self.at(pos).unwrap().color != color;
 				}
 			}
 		}
@@ -30,7 +30,7 @@ impl Board {
 		if moves.iter().any(|&p| { 
 			if let Some(tile) = self.at(p) {
 				match tile.piece {
-					Piece::Bishop|Piece::Queen|Piece::King => true,
+					Piece::Bishop|Piece::Queen => self.at(p).unwrap().color != color,
 					_ => false
 				}
 			} else { false }
@@ -43,7 +43,7 @@ impl Board {
 		if moves.iter().any(|&p| { 
 			if let Some(tile) = self.at(p) {
 				match tile.piece {
-					Piece::Rook|Piece::Queen|Piece::King => true,
+					Piece::Bishop|Piece::Queen => self.at(p).unwrap().color != color,
 					_ => false
 				}
 			} else { false }
@@ -56,14 +56,27 @@ impl Board {
 		if moves.iter().any(|&p| { 
 			if let Some(tile) = self.at(p) {
 				match tile.piece {
-					Piece::Knight => true,
+					Piece::Knight => self.at(p).unwrap().color != color,
 					_ => false
 				}
 			} else { false }
 		}) {
 			return true
 		}
-	
+
+		moves = Vec::new();
+		self.generate_king(&mut moves, king_pos);
+		if moves.iter().any(|&p| { 
+			if let Some(tile) = self.at(p) {
+				match tile.piece {
+					Piece::King => self.at(p).unwrap().color != color,
+					_ => false
+				}
+			} else { false }
+		}) {
+			return true
+		}
+
 		false
 	}
 
@@ -285,5 +298,16 @@ impl Board {
 				}
 			}
 		};
+	}
+}
+
+mod tests {
+	use crate::board::{Board, Color};
+
+	#[test]
+	pub fn test_is_king_in_check() {
+		let fen = "rnbqk1nr/pppp1ppp/8/8/1bPp4/6P1/PP2PP1P/RNBQKBNR w KQkq - 0 0";
+		let b = Board::from_fen(fen).unwrap();
+		debug_assert_eq!(b.is_king_in_check(crate::board::Color::White), true);
 	}
 }
