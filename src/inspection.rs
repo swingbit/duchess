@@ -25,6 +25,7 @@ impl Board {
 		}
 
 		/* check an attack by other pieces */
+		// Bishop or Queen
 		let mut moves = Vec::new();
 		self.generate_bishop(&mut moves, king_pos, 7);
 		if moves.iter().any(|&p| { 
@@ -38,6 +39,7 @@ impl Board {
 			return true
 		}
 
+		// Rook or Queen
 		moves = Vec::new();
 		self.generate_rook(&mut moves, king_pos, 7);
 		if moves.iter().any(|&p| { 
@@ -51,6 +53,7 @@ impl Board {
 			return true
 		}
 
+		// Knight
 		moves = Vec::new();
 		self.generate_knight(&mut moves, king_pos);
 		if moves.iter().any(|&p| { 
@@ -64,8 +67,10 @@ impl Board {
 			return true
 		}
 
-		moves = Vec::new();
-		self.generate_king(&mut moves, king_pos);
+		// King
+		let mut moves = Vec::new();
+		self.generate_bishop(&mut moves, king_pos, 1);
+		self.generate_rook(&mut moves, king_pos, 1);
 		if moves.iter().any(|&p| { 
 			if let Some(tile) = self.at(p) {
 				match tile.piece {
@@ -294,6 +299,6 @@ mod tests {
 	pub fn test_is_king_in_check() {
 		let fen = "rnbqk1nr/pppp1ppp/8/8/1bPp4/6P1/PP2PP1P/RNBQKBNR w KQkq - 0 0";
 		let b = Board::from_fen(fen).unwrap();
-		debug_assert_eq!(b.is_king_in_check(crate::board::Color::White), true);
+		debug_assert!(b.is_king_in_check(crate::board::Color::White));
 	}
 }

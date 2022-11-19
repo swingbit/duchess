@@ -407,38 +407,51 @@ impl Board {
 		&self.tiles[pos.row as usize][pos.col as usize]
 	}
 
-	/// Clone current board and apply given move.
 	/// The move is assumed to be valid
-	pub fn clone_apply_move(&self, mv: &Move) -> Board {
-		let mut b = self.clone();
-		b.player = b.player.swap();
-		b.tiles[mv.t_pos.row as usize][mv.t_pos.col as usize] = b.tiles[mv.f_pos.row as usize][mv.f_pos.col as usize];
-		b.tiles[mv.f_pos.row as usize][mv.f_pos.col as usize] = None;
-		let t = b.at(mv.t_pos).unwrap();
+	pub fn make_move(&mut self, mv: &Move) -> () {
+		self.tiles[mv.t_pos.row as usize][mv.t_pos.col as usize] = self.tiles[mv.f_pos.row as usize][mv.f_pos.col as usize];
+		self.tiles[mv.f_pos.row as usize][mv.f_pos.col as usize] = None;
+
+		let t = self.at(mv.t_pos).unwrap();
 
 		/* Castling: move Rook as well */
 		if t.piece == Piece::King && (mv.f_pos.col - mv.t_pos.col).abs() == 2 {
 			match t.color {
 				Color::Black => {
 					if mv.t_pos == Pos::at(6,7).unwrap() {
-						b.tiles[7][5] = b.tiles[7][7];
-						b.tiles[7][7] = None;
+						debug_assert!(self.can_castle_ks[t.color as usize]);
+						self.tiles[7][5] = self.tiles[7][7];
+						self.tiles[7][7] = None;
 					} else if mv.t_pos == Pos::at(2,7).unwrap() {
-						b.tiles[7][3] = b.tiles[7][0];
-						b.tiles[7][0] = None;
+						debug_assert!(self.can_castle_qs[t.color as usize]);
+						self.tiles[7][3] = self.tiles[7][0];
+						self.tiles[7][0] = None;
 					}
 				},
 				Color::White => {
 					if mv.t_pos == Pos::at(6,0).unwrap() {
-						b.tiles[0][5] = b.tiles[0][7];
-						b.tiles[0][7] = None;
+						debug_assert!(self.can_castle_ks[t.color as usize]);
+						self.tiles[0][5] = self.tiles[0][7];
+						self.tiles[0][7] = None;
 					} else if mv.t_pos == Pos::at(2,0).unwrap() {
-						b.tiles[0][3] = b.tiles[0][0];
-						b.tiles[0][0] = None;
+						debug_assert!(self.can_castle_qs[t.color as usize]);
+						self.tiles[0][3] = self.tiles[0][0];
+						self.tiles[0][0] = None;
 					}
 				}
 			}
 		}
+	}
+
+	/// Clone current board and apply given move.
+	/// The move is assumed to be valid
+	pub fn clone_apply_move(&self, mv: &Move) -> Board {
+		let mut b = self.clone();
+		b.make_move(mv);
+		b.player = b.player.swap();
+
+		// The destination tile after the move
+		let t = b.at(mv.t_pos).unwrap();
 
 		/* King moved */
 		if t.piece == Piece::King {
@@ -448,7 +461,7 @@ impl Board {
 			b.can_castle_qs[t.color as usize] = false;
 		}
 
-		// /* Rook moved: disallow castling on its side */
+		/* Rook moved: disallow castling on its side */
 		if t.piece == Piece::Rook {
 			match t.color {
 				Color::Black => {
@@ -469,6 +482,32 @@ impl Board {
 				}
 			}
 		}
+
+		/* Oppenent's Rook was captured: disallow castling on its side */
+		// The destination tile before the move
+		if let Some(t) = self.at(mv.t_pos) {
+			if t.piece == Piece::Rook {
+				match t.color {
+					Color::Black => {
+						if mv.t_pos == Pos::at(0,7).unwrap() {
+							b.can_castle_qs[t.color as usize] = false;
+						}
+						if mv.t_pos == Pos::at(7,7).unwrap() {
+							b.can_castle_ks[t.color as usize] = false;
+						}
+					},
+					Color::White => {
+						if mv.t_pos == Pos::at(0,0).unwrap() {
+							b.can_castle_qs[t.color as usize] = false;
+						}
+						if mv.t_pos == Pos::at(7,0).unwrap() {
+							b.can_castle_ks[t.color as usize] = false;
+						}
+					}
+				}
+			}
+		}
+
 		b.stored_value = Cell::default();
 
 		b
@@ -509,7 +548,7 @@ mod tests {
 		let coords_in = "G8";
 		let pos = coords_in.parse::<Pos>().expect("legal");
 		let coords_out = pos.to_string();
-		assert_eq!(coords_in.to_ascii_lowercase(), coords_out);
+		debug_assert_eq!(coords_in.to_ascii_lowercase(), coords_out);
 	}
 
 	#[test]
@@ -517,22 +556,22 @@ mod tests {
 		let mv_in = "e7e8";
 		let mv = mv_in.parse::<Move>().expect("legal");
 		let mv_out = mv.to_string();
-		assert_eq!(mv_in.to_ascii_lowercase(), mv_out);
+		debug_assert_eq!(mv_in.to_ascii_lowercase(), mv_out);
 	}
 	#[test]
 	pub fn test_parse_move_promotion() {
 		let mv_in = "e7e8q";
 		let mv = mv_in.parse::<Move>().expect("legal");
 		let mv_out = mv.to_string();
-		assert_eq!(mv_in.to_ascii_lowercase(), mv_out);
+		debug_assert_eq!(mv_in.to_ascii_lowercase(), mv_out);
 	}
 
 	#[test]
 	pub fn test_fen1() {
 		let fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 0";
 		let b = Board::from_fen(fen).unwrap();
-		assert_eq!(fen, b.to_fen());
-		assert_eq!(b.king_pos[Color::White as usize], Pos::at(4,0).unwrap());
-		assert_eq!(b.king_pos[Color::Black as usize], Pos::at(4,7).unwrap());
+		debug_assert_eq!(fen, b.to_fen());
+		debug_assert_eq!(b.king_pos[Color::White as usize], Pos::at(4,0).unwrap());
+		debug_assert_eq!(b.king_pos[Color::Black as usize], Pos::at(4,7).unwrap());
 	}
 }

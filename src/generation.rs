@@ -1,6 +1,6 @@
 use std::ops;
 
-use crate::board::{Board,Pos,Move,MoveType,Piece,Color};
+use crate::board::{Board,Pos,Move,MoveType,Piece,Color,Tile};
 
 impl Board {
 	pub fn generate_all(&self) -> Vec<(Move,Board)> {
@@ -158,10 +158,15 @@ impl Board {
 
 	/// Generate possible King moves from a given point
 	pub fn generate_king(&self, moves: &mut Vec<Pos>, f_pos: Pos) {
+		// This function can only be used from the player's side
+		assert_eq!(self.king_pos[self.player as usize], f_pos);
+
+		debug_assert_eq!(self.at(f_pos).unwrap().piece, Piece::King);
+
 		self.generate_bishop(moves,f_pos,1);
 		self.generate_rook(moves,f_pos,1);
 
-		// /* castling */
+		/* castling */
 		if self.can_castle_qs[self.player as usize] {
 			if self.at(Pos::at(f_pos.col-1,f_pos.row).unwrap()).is_none() &&
 				self.at(Pos::at(f_pos.col-2,f_pos.row).unwrap()).is_none() &&
