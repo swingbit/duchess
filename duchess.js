@@ -40,6 +40,6 @@ export function duchess () {
     // onMoveEnd: onMoveEnd
   }
   board = Chessboard('board1', config)
-  last_human_fen = config.position + ' w KQkq - 0 1'
-  last_duchess_fen = config.position + ' w KQkq - 0 1'
+  last_human_fen = board.fen() + ' w KQkq - 0 1'
+  last_duchess_fen = board.fen() + ' w KQkq - 0 1'
 }
