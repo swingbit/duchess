@@ -132,7 +132,6 @@ pub struct Pos {
 pub struct Move {
 	pub f_pos: Pos,
 	pub t_pos: Pos,
-	pub promotion: Option<Piece>
 }
 
 impl fmt::Display for Pos {
@@ -156,13 +155,7 @@ impl FromStr for Pos {
 
 impl fmt::Display for Move {
 	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-		let mut s = write!(f, "{}{}", self.f_pos, self.t_pos);
-		if let Some(p) = self.promotion {
-			if p != Piece::Pawn {
-					s = write!(f, "{}", p.as_char());
-			}
-		}
-		s
+		write!(f, "{}{}", self.f_pos, self.t_pos)
 	}
 }
 
@@ -172,12 +165,7 @@ impl FromStr for Move {
 	fn from_str(s: &str) -> Result<Self, Self::Err> {
 		let f_pos = s[0..2].parse::<Pos>()?;
 		let t_pos = s[2..4].parse::<Pos>()?;
-		if s.len() == 5 {
-			let promotion = Piece::from_char(s.chars().nth(4).unwrap())?;
-			return Ok(Move {f_pos, t_pos,promotion:Some(promotion)});
-		} else {
-			return Ok(Move {f_pos, t_pos,promotion:None});
-		}
+		Ok(Move {f_pos, t_pos})
 	}
 }
 
@@ -409,9 +397,21 @@ impl Board {
 
 	/// The move is assumed to be valid
 	pub fn make_move(&mut self, mv: &Move) -> () {
-		self.tiles[mv.t_pos.row as usize][mv.t_pos.col as usize] = self.tiles[mv.f_pos.row as usize][mv.f_pos.col as usize];
+		// The source tile before the move
+		let f = self.at(mv.f_pos).unwrap();
+
+		if f.piece == Piece::Pawn 
+				&& ((f.color == Color::Black && mv.t_pos.row == 0)
+				||  (f.color == Color::White && mv.t_pos.row == 7)) {
+		// Promotion (always promote to Queen)
+		self.tiles[mv.t_pos.row as usize][mv.t_pos.col as usize] = Some(Tile {piece: Piece::Queen, color: f.color});
+		} else {
+			// Normal move
+			self.tiles[mv.t_pos.row as usize][mv.t_pos.col as usize] = self.tiles[mv.f_pos.row as usize][mv.f_pos.col as usize];
+		}
 		self.tiles[mv.f_pos.row as usize][mv.f_pos.col as usize] = None;
 
+		// The destination tile after the move
 		let t = self.at(mv.t_pos).unwrap();
 
 		/* Castling: move Rook as well */
@@ -554,13 +554,6 @@ mod tests {
 	#[test]
 	pub fn test_parse_move() {
 		let mv_in = "e7e8";
-		let mv = mv_in.parse::<Move>().expect("legal");
-		let mv_out = mv.to_string();
-		debug_assert_eq!(mv_in.to_ascii_lowercase(), mv_out);
-	}
-	#[test]
-	pub fn test_parse_move_promotion() {
-		let mv_in = "e7e8q";
 		let mv = mv_in.parse::<Move>().expect("legal");
 		let mv_out = mv.to_string();
 		debug_assert_eq!(mv_in.to_ascii_lowercase(), mv_out);

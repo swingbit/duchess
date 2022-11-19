@@ -1,6 +1,6 @@
 use std::ops;
 
-use crate::board::{Board,Pos,Move,MoveType,Piece,Color,Tile};
+use crate::board::{Board,Pos,Move,MoveType,Piece,Color};
 
 impl Board {
 	pub fn generate_all(&self) -> Vec<(Move,Board)> {
@@ -12,17 +12,7 @@ impl Board {
 					if f_tile.color == self.player {
 						let moves = self.generate(f_pos);
 						for t_pos in moves {
-							let promotion;
-							if f_tile.piece == Piece::Pawn 
-									&& ((f_tile.color == Color::Black && t_pos.row == 0)
-									||  (f_tile.color == Color::White && t_pos.row == 7)) {
-								/* simplification: assume we always promote to a Queen */
-								promotion = Some(Piece::Queen);
-							} else {
-								promotion = None;
-							}
-
-							let mv = Move{f_pos,t_pos, promotion};
+							let mv = Move{f_pos,t_pos};
 							let b = self.clone_apply_move(&mv);
 							if !b.is_king_in_check(self.player) {
 								all_moves.push((mv,b));

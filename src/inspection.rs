@@ -282,7 +282,7 @@ impl Board {
 		return match self.check_piece(f_pos, t_pos, max_obstacles) {
 			MoveType::Illegal => MoveType::Illegal,
 			mt => {
-				let mv = Move { f_pos, t_pos, promotion: None };
+				let mv = Move { f_pos, t_pos };
 				let b = self.clone_apply_move(&mv);
 				if b.is_king_in_check(self.at(f_pos).unwrap().color) {
 					MoveType::Illegal

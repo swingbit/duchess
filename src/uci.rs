@@ -40,7 +40,6 @@ impl Move {
 		Move {
 			f_pos: Pos::from_uci(um.from), 
 			t_pos: Pos::from_uci(um.to),
-			promotion: lift_Option(Piece::from_uci)(um.promotion),
 		}
 	}
 
