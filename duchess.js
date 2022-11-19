@@ -4,8 +4,8 @@ var board = null
 var $last_human = $('#last_human')
 var $last_duchess = $('#last_duchess')
 
-var last_human_fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
-var last_duchess_fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
+var last_human_fen = null
+var last_duchess_fen = null
 
 function duchessMove(fromFEN) {
   last_duchess_fen = best_move(fromFEN)
@@ -20,6 +20,10 @@ function onDrop (source, target, piece, newPos, oldPos, orientation) {
     return 'snapback'
   }
   last_human_fen = fen
+  // Re-draw the board according to the received FEN
+  // because there might have been a promotion or a castling
+  // Do it with a delay, so that the standard redraw after the drop is overwritten
+  window.setTimeout(board.position, 100, last_human_fen)
   $last_human.html(last_human_fen)
   window.setTimeout(duchessMove, 100, last_human_fen)
 }
@@ -36,4 +40,6 @@ export function duchess () {
     // onMoveEnd: onMoveEnd
   }
   board = Chessboard('board1', config)
+  last_human_fen = config.position + ' w KQkq - 0 1'
+  last_duchess_fen = config.position + ' w KQkq - 0 1'
 }
