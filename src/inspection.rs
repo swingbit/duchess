@@ -276,9 +276,15 @@ impl Board {
 	pub fn check_move(&self, f_pos: Pos, t_pos: Pos, max_obstacles: u8) -> MoveType {
 		
 		// Conditions:
+		// - the color in turn moves
 		// - the move must be valid for that piece
 		// - the king must not be in check after the move
 		// - [TODO] if the move is a castle, that must be allowed 
+
+		if self.at(f_pos).unwrap().color != self.player {
+			return MoveType::Illegal;
+		}
+
 		return match self.check_piece(f_pos, t_pos, max_obstacles) {
 			MoveType::Illegal => MoveType::Illegal,
 			mt => {
