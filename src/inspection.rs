@@ -19,7 +19,7 @@ impl Board {
 		for i in [-1, 1] {
 			if let Some(pos) = Pos::at(king_pos.col+i, f_incr(king_pos.row,1)) {
 				if let MoveType::Capture(Piece::Pawn) = self.move_type(king_pos,pos) {
-					return self.at(pos).unwrap().color != color;
+					return true;
 				}
 			}
 		}
@@ -45,7 +45,7 @@ impl Board {
 		if moves.iter().any(|&p| { 
 			if let Some(tile) = self.at(p) {
 				match tile.piece {
-					Piece::Bishop|Piece::Queen => self.at(p).unwrap().color != color,
+					Piece::Rook|Piece::Queen => self.at(p).unwrap().color != color,
 					_ => false
 				}
 			} else { false }
