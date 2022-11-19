@@ -1,29 +1,27 @@
-import { check_move, best_move } from './pkg/duchesslib.js';
+import { make_move, best_move } from './pkg/duchesslib.js';
 
 var board = null
+var $last_human = $('#last_human')
+var $last_duchess = $('#last_duchess')
+
+var last_human_fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
+var last_duchess_fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
 
 function duchessMove(fromFEN) {
-  var toFEN = best_move(fromFEN)
-  board.position(toFEN)
+  last_duchess_fen = best_move(fromFEN)
+  board.position(last_duchess_fen)
+  $last_duchess.html(last_duchess_fen)
 }
 
 function onDrop (source, target, piece, newPos, oldPos, orientation) {
-  // console.log('Source: ' + source)
-  // console.log('Target: ' + target)
-  // console.log('Piece: ' + piece)
-  // console.log('New position: ' + Chessboard.objToFen(newPos))
-  // console.log('Old position: ' + Chessboard.objToFen(oldPos))
-  // console.log('Orientation: ' + orientation)
-  // console.log('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
-
-  var fromFEN = Chessboard.objToFen(oldPos) + ' ' + piece[0] + ' KQkq'
-  if(check_move(fromFEN, source, target) == 'illegal') {
+  // make move returns a new FEN, or 'illegal'
+  var fen = make_move(last_duchess_fen, source, target)
+  if(fen == 'illegal') {
     return 'snapback'
   }
-
-  var player = piece[0] == 'w' ? 'b' : 'w'
-  var toFEN = Chessboard.objToFen(newPos) + ' ' + player + ' KQkq'
-  window.setTimeout(duchessMove, 100, toFEN)
+  last_human_fen = fen
+  $last_human.html(last_human_fen)
+  window.setTimeout(duchessMove, 100, last_human_fen)
 }
 
 
