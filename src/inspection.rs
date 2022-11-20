@@ -1,6 +1,6 @@
 use std::ops;
 
-use crate::board::{Board,Pos,MoveType,Piece,Color,Move};
+use crate::board::{Board,Pos,MoveType,Piece,Color,Move, GameEnd};
 
 impl Board {
 	/// Determine whether the King of the given color is in check,
@@ -83,6 +83,17 @@ impl Board {
 		}
 
 		false
+	}
+
+	pub fn check_end_game(&self) -> Option<GameEnd> {
+		if self.generate_all().is_empty() {
+			if self.is_king_in_check(self.player) {
+				return Some(GameEnd::Checkmate(self.player));
+			} else{
+				return Some(GameEnd::Draw);
+			}
+		}
+		None
 	}
 
 	pub fn move_type(&self, f_pos: Pos, t_pos: Pos) -> MoveType {

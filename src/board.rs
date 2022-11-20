@@ -540,6 +540,12 @@ impl Board {
 	}
 }
 
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
+pub enum GameEnd {
+	Draw,
+	Checkmate(Color) // Color is in checkmate (loses)
+}
+
 #[cfg(test)]
 mod tests {
 	use crate::board::{Pos,Move,Board,Color};
