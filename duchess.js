@@ -70,8 +70,7 @@ function duchessMove(fromFEN) {
 function onDrop (source, target, piece, newPos, oldPos, orientation) {
   // make  move returns a new FEN, or 'illegal'
   var reply = make_move(last_duchess_fen, source, target)
-  check_panic_reply(reply)
-  if(reply == 'illegal') {
+  if(reply = /illegal/) {
     return 'snapback'
   }
   last_fen = last_human_fen = reply
