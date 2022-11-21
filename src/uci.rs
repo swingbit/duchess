@@ -100,16 +100,19 @@ pub fn uci_manager(opts: &Options) {
 			UciMessage::Go { time_control:_, search_control:_} => {
 				let opts = opts.clone();
 				let b1 = b.clone();
-				let res = match opts.search_algo {
+				if let Some(res) = match opts.search_algo {
 					SearchAlgorithm::Minimax => minimax(&b1, &opts),
 					SearchAlgorithm::Negamax => negamax(&b1, &opts),
 					SearchAlgorithm::Negascout => negascout(&b1, &opts)
-				};
-				let _score = res.0;
-				let mv = res.1;
-				let bestmove = UciMessage::best_move(mv.to_uci());
-				b = b.clone_apply_move(&mv);
-				println!("{}", bestmove);
+				} {
+					let _score = res.0;
+					let mv = res.1;
+					let bestmove = UciMessage::best_move(mv.to_uci());
+					b = b.clone_apply_move(&mv);
+					println!("{}", bestmove);
+				} else {
+					// TODO: communicate end of game. How?
+				}
 			},
 			_ => eprintln!("Don't know what to do")
 		}

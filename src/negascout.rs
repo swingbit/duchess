@@ -8,20 +8,20 @@ use crate::ordering::move_ordering;
 pub fn negascout(
 	b: &Board,
 	opts: &Options,
-) -> (Value, Move) {
+) -> Option<(Value, Move)> {
 	match b.player {
 		Color::Black => {
 			if let (v, Some(mv)) = negascout_search(b, Value::MIN + 1, Value::MAX - 1, 0, -1, opts) {
-				return (-v, mv);
+				return Some((-v, mv));
 			}
 		}
 		Color::White => {
 			if let (v, Some(mv)) = negascout_search(b, Value::MIN + 1, Value::MAX - 1, 0, 1, opts) {
-				return (v, mv);
+				return Some((v, mv));
 			}
 		}
 	}
-	panic!("Couldn't find any move");
+	None
 }
 
 // Implementation inspired to https://homepage.iis.sinica.edu.tw/~tshsu/tcg/2018/slides/slide7.pdf

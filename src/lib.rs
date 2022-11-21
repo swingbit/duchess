@@ -22,8 +22,13 @@ use crate::misc::OPTS_DEFAULT;
 /// Computes the best move from the given board
 pub fn find_best_move(fromFEN:&str) -> String {
   let b = Board::from_fen(fromFEN).unwrap();
-  let (_, mv) = negascout(&b, &OPTS_DEFAULT);
-  return b.clone_apply_move(&mv).to_fen();
+  if let Some((_, mv)) = negascout(&b, &OPTS_DEFAULT) {
+    return b.clone_apply_move(&mv).to_fen();
+  }
+  // This probably means the game has ended.
+  // We don't really have a FEN to return, so we return the original FEN.
+  // Better call check_end_game(fromFEN) before calling find_best_move(fromFEN)
+  fromFEN.to_string()
 }
 
 #[wasm_bindgen]

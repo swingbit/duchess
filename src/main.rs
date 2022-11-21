@@ -1,3 +1,4 @@
+use board::GameEnd;
 use clap::{Command, Arg};
 
 mod board;
@@ -27,18 +28,26 @@ fn self_play_test(opts: &Options) {
 	/* Just for testing: AI playing against itself in a loop */
 
 	for i in 0..100 {
-		let res:(Value,Move);
-
-		match opts.search_algo {
-			SearchAlgorithm::Minimax => res = minimax(&b, opts),
-			SearchAlgorithm::Negamax => res = negamax(&b, opts),
-			SearchAlgorithm::Negascout => res = negascout(&b, opts),
+		if let Some(res) = match opts.search_algo {
+			SearchAlgorithm::Minimax => minimax(&b, opts),
+			SearchAlgorithm::Negamax => negamax(&b, opts),
+			SearchAlgorithm::Negascout => negascout(&b, opts),
 			// _ => panic!("Algorithm {:?} not supported", opts.search_algo)
+		} {
+			let score = res.0;
+			let mv = res.1;
+			println!("{}. {:?}: [{}{}]({})", i, b.player, mv.f_pos, mv.t_pos, score);
+			b = b.clone_apply_move(&mv);
+		} else {
+			let result = match b.check_end_game() {
+				Some(GameEnd::Draw) => "draw".to_string(),
+				Some(GameEnd::Checkmate(Color::Black)) => "checkmate for black".to_string(),
+				Some(GameEnd::Checkmate(Color::White)) => "checkmate for white".to_string(),
+				None => panic!("This shouldn't be happening. Board: {}", b.to_fen())
+			  };
+			println!("The game ended: {}", result);
+			break;
 		}
-		let score = res.0;
-		let mv = res.1;
-		println!("{}. {:?}: [{}{}]({})", i, b.player, mv.f_pos, mv.t_pos, score);
-		b = b.clone_apply_move(&mv);
 	}
 }
 

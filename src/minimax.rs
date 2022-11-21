@@ -8,16 +8,16 @@ use crate::ordering::move_ordering;
 pub fn minimax(
 	b: &Board,
 	opts: &Options,
-) -> (Value, Move) {
+) -> Option<(Value, Move)> {
 	let res;
 	match b.player {
 		Color::Black => res = minimize(b, Value::MIN, Value::MAX, 0, opts),
 		Color::White => res = maximize(b, Value::MIN, Value::MAX, 0, opts),
 	}
 	if let (v, Some(mv)) = res {
-		return (v, mv);
+		return Some((v, mv));
 	}
-	panic!("Couldn't find any move");
+	None
 }
 
 fn maximize(

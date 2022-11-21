@@ -8,22 +8,22 @@ use crate::ordering::move_ordering;
 pub fn negamax(
 	b: & Board,
 	opts: &Options,
-) -> (Value, Move) {
+) -> Option<(Value, Move)> {
 	let mut si = SearchInfo::new();
 
 	match b.player {
 		Color::Black => {
 			if let (v, Some(mv)) = negamax_search(b, Value::MIN + 1, Value::MAX - 1, 0, -1, &mut si, opts) {
-				return (-v, mv);
+				return Some((-v, mv));
 			}
 		},
 		Color::White => {
 			if let (v, Some(mv)) = negamax_search(b, Value::MIN + 1, Value::MAX - 1, 0, 1, &mut si, opts) {
-				return (v, mv);
+				return Some((v, mv));
 			}
 		}
 	}
-	panic!("Couldn't find any move");
+	None
 }
 
 fn negamax_search(
