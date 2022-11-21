@@ -1,25 +1,27 @@
 import { make_move, find_best_move, check_end_game } from './pkg/duchesslib.js';
 
+const START_FEN = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1'
+
 var board = null
 var $last_white = $('#last_white')
 var $last_black = $('#last_black')
 
-var last_fen = null
+var last_fen = START_FEN
 
 $('#new_game_as_white').on('click', function () {
   board.orientation('white')
-  board.position('start')
+  board.position(START_FEN)
   $last_white.html(null)
   $last_black.html(null)
-  last_fen = board.fen() + ' w KQkq - 0 1'
+  last_fen = START_FEN
 })
 
 $('#new_game_as_black').on('click', function () {
   board.orientation('black')
-  board.position('start')
+  board.position(START_FEN)
   $last_white.html(null)
   $last_black.html(null)
-  last_fen = board.fen() + ' w KQkq - 0 1'
+  last_fen = START_FEN
 
   window.setTimeout(duchessMove, 1000, last_fen)
 })
@@ -98,11 +100,10 @@ function onMoveEnd(oldPos, newPos) {
 export function duchess () {
   var config = {
     draggable: true,
-    position: 'start',
+    position: START_FEN,
     orientation: 'white',
     onDrop: onDrop,
     onMoveEnd: onMoveEnd,
   }
   board = Chessboard('board1', config)
-  last_fen = board.fen() + ' w KQkq - 0 1'
 }
