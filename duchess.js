@@ -61,10 +61,10 @@ function handle_end_game(fen) {
 function record_last_fen(fen) {
   if (fen.search(/ w /) != -1) {
     last_fen = fen
-    $last_white.html(last_fen)
+    $last_black.html(last_fen)
   } else if (fen.search(/ b /) != -1) {
     last_fen = fen
-    $last_black.html(last_fen)
+    $last_white.html(last_fen)
   } else {
     panic()
   }
