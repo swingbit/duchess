@@ -2,3 +2,6 @@
 /target
 /chessboard.js
 /publish.sh
+/flamegraph.svg
+/perf.*
+
