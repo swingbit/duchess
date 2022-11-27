@@ -7,28 +7,34 @@ var $last_white = $('#last_white')
 var $last_black = $('#last_black')
 
 var last_fen = START_FEN
+var fen_stack = [START_FEN]
 
 $('#new_game_as_white').on('click', function () {
-  board.orientation('white')
-  board.position(START_FEN)
-  $last_white.html(null)
-  $last_black.html(null)
-  last_fen = START_FEN
+  new_game('white')
 })
 
 $('#new_game_as_black').on('click', function () {
-  board.orientation('black')
-  board.position(START_FEN)
-  $last_white.html(null)
-  $last_black.html(null)
-  last_fen = START_FEN
-
+  new_game('black')
   window.setTimeout(duchessMove, 1000, last_fen)
 })
 
 $('#suggest_move').on('click', function () {
   duchessMove(last_fen)
   window.setTimeout(duchessMove, 500, last_fen)
+})
+
+$('#undo_move').on('click', function () {
+  fen_stack.pop()
+  fen_stack.pop()
+  var fen2 = fen_stack.pop()
+  var fen1 = fen_stack.pop()
+  if (fen1 == undefined || fen2 == undefined) {
+    new_game(board.orientation)
+  } else {
+    record_last_fen(fen1)
+    record_last_fen(fen2)
+    board.position(last_fen)
+  }
 })
 
 function panic() {
@@ -40,6 +46,15 @@ function check_panic_reply(reply) {
   if(reply == 'illegal_input') {
     panic()
   }
+}
+
+function new_game(orientation) {
+  board.orientation(orientation)
+  board.position(START_FEN)
+  $last_white.html(null)
+  $last_black.html(null)
+  last_fen = START_FEN
+  fen_stack = [START_FEN]
 }
 
 function handle_end_game(fen) {
@@ -61,11 +76,11 @@ function handle_end_game(fen) {
 }
 
 function record_last_fen(fen) {
+  last_fen = fen
+  fen_stack.push(fen)
   if (fen.search(/ w /) != -1) {
-    last_fen = fen
     $last_black.html(last_fen)
   } else if (fen.search(/ b /) != -1) {
-    last_fen = fen
     $last_white.html(last_fen)
   } else {
     panic()
@@ -88,7 +103,7 @@ function onDrop (source, target, piece, newPos, oldPos, orientation) {
   record_last_fen(reply)
   // Re-draw the board according to the received FEN
   // because there might have been a promotion or a castling
-  // Do it with a delay, so that the standard redraw after the drop is overwritten
+  // Do it with a delay, after the standard redraw of the drop
   window.setTimeout(board.position, 100, last_fen)
   window.setTimeout(duchessMove, 100, last_fen)
 }
