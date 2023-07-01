@@ -2,7 +2,7 @@
 A simple chess engine. 
 Because it's fun and because I needed an excuse to get accustomed to Rust.
 
-The `wasm` is playable online at https://swingbit.github.io/duchess/
+The `wasm` branch is playable online at https://swingbit.github.io/duchess/
 
 ## Status
 - Move generation:
