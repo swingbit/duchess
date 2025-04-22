@@ -254,8 +254,11 @@ impl Board {
 				},
 
 				Piece::King => {
-					if (f_pos.col - t_pos.col).abs() == 2 {
-						/* castling (TODO: cannot be used if currently in check) */
+					/* castling (TODO: cannot be used if currently in check) */
+					if f_pos.col == 4 && (
+							(f_tile.color == Color::White && f_pos.row == 0) ||
+							(f_tile.color == Color::Black && f_pos.row == 7)
+							) && (f_pos.col - t_pos.col).abs() == 2 {
 						if !self.can_castle_qs[self.player as usize] && t_pos.col == 2 {
 							return MoveType::Illegal;
 						}
@@ -266,6 +269,9 @@ impl Board {
 							self.at(Pos::at((f_pos.col + t_pos.col)/2,f_pos.row).unwrap()).is_none() {
 							return MoveType::Move;
 						}
+						return MoveType::Illegal;
+					}
+					if (f_pos.col - t_pos.col).abs() > 1 || (f_pos.row - t_pos.row).abs() > 1 {
 						return MoveType::Illegal;
 					}
 
@@ -312,10 +318,20 @@ impl Board {
 }
 
 mod tests {
+	use crate::board::{Board, Color, Pos, MoveType};
 	#[test]
 	pub fn test_is_king_in_check() {
 		let fen = "rnbqk1nr/pppp1ppp/8/8/1bPp4/6P1/PP2PP1P/RNBQKBNR w KQkq - 0 0";
 		let b = Board::from_fen(fen).unwrap();
-		debug_assert!(b.is_king_in_check(crate::board::Color::White));
+		debug_assert!(b.is_king_in_check(Color::White));
+	}
+	#[test]
+	pub fn test_king_2_steps() {
+		let fen = "r1bqkbnr/pppppppp/2n5/8/4P3/8/PPPP1PPP/RNBQKBNR w KQkq - 0 0";
+		let b = Board::from_fen(fen).unwrap();
+		let f_pos = Pos::at(4,0).unwrap();
+		let t_pos = Pos::at(4,2).unwrap();
+		let mv = b.check_move(f_pos, t_pos, 0);
+		debug_assert!(mv == MoveType::Illegal);
 	}
 }
